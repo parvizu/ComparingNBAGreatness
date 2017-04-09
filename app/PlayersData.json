@@ -1,0 +1,838 @@
+[
+	{
+		"name": "Kobe Bryant", 
+		"nickname": "kobe",
+		"age": {
+			"first": 18,
+			"last": 37
+		},
+		"awards": {
+			"1997": [],
+			"1998": ["AS"],
+			"1999": ["AN3"],
+			"2000": ["AS", "AD1", "AN2"],
+			"2001": ["AS", "AD2", "AN2"],
+			"2002": ["AS", "AD2", "AN1"],
+			"2003": ["AS", "AD1", "AN1"],
+			"2004": ["AS", "AD1", "AN1"],
+			"2005": ["AS", "AN3"],
+			"2006": ["AS", "AD1", "AN1"],
+			"2007": ["AS", "AD1", "AN1"],
+			"2008": ["AS", "AD1", "AN1", "MVP"],
+			"2009": ["AS", "AD1", "AN1"],
+			"2010": ["AS", "AD1", "AN1"],
+			"2011": ["AS", "AD1", "AN1"],
+			"2012": ["AS", "AD2", "AN1"],
+			"2013": ["AS", "AN1"],
+			"2014": ["AS"],
+			"2015": ["AS"],
+			"2016": ["AS"]
+		},
+		"pics":["kobetrans1.png","kobetrans2.png","kobetrans3.png"],
+		"teams": [
+			{"team": "lakers", "start": 1997, "end": 2016, "careerStart":1, "careerEnd":20}
+		],
+		"totals": {
+			"MVP": "1",
+			"AN": "15",
+			"AD": "12",
+			"AS": "18"
+		},
+		"championships": [2000,2001,2002,2009,2010]
+	},
+	{
+		"name": "Michael Jordan",
+		"nickname": "jordan",
+		"age": {
+			"first": 21,
+			"last": 39
+		},
+		"awards": {
+			"1985": ["AS", "AN2"],
+			"1986": ["AS"],
+			"1987": ["AS", "AN1"],
+			"1988": ["AS", "AD1", "AN1", "MVP"],
+			"1989": ["AS", "AD1", "AN1"],
+			"1990": ["AS", "AD1", "AN1"],
+			"1991": ["AS", "AD1", "AN1", "MVP"],
+			"1992": ["AS", "AD1", "AN1", "MVP"],
+			"1993": ["AS", "AD1", "AN1"],
+			"1995": [],
+			"1996": ["AS", "AD1", "AN1", "MVP"],
+			"1997": ["AS", "AD1", "AN1"],
+			"1998": ["AS", "AD1", "AN1", "MVP"],
+			"2002": ["AS"],
+			"2003": ["AS"]
+		},
+		"pics":["jordantrans1.png","jordantrans2.png","jordantrans3.jpg"],
+		"teams": [
+			{"team": "bulls", "start": 1985, "end": 1993, "careerStart":1, "careerEnd":9},
+			{"team": "bulls", "start": 1995, "end": 1998, "careerStart":10, "careerEnd":13},
+			{"team": "wizards", "start": 2002, "end": 2003, "careerStart":14, "careerEnd":15}
+		],
+		"totals": {
+			"MVP": "5",
+			"AN": "11",
+			"AD": "9",
+			"AS": "14"
+		},
+		"championships": [1991,1992,1993,1996,1997,1998]
+	},
+	{
+		"name": "Earvin 'Magic' Johnson",
+		"nickname": "magic",
+		"age": {
+			"first": 20,
+			"last": 36
+		},
+		"awards": {
+			"1980": ["AS"],
+			"1981": [],
+			"1982": ["AS", "AN2"],
+			"1983": ["AS", "AN1"],
+			"1984": ["AS", "AN1"],
+			"1985": ["AS", "AN1"],
+			"1986": ["AS", "AN1"],
+			"1987": ["AS", "AN1", "MVP"],
+			"1988": ["AS", "AN1"],
+			"1989": ["AS", "AN1", "MVP"],
+			"1990": ["AS", "AN1", "MVP"],
+			"1991": ["AS", "AN1"],
+			"1996": []
+		},
+		"pics":["magictrans1.png","magictrans2.png"],
+		"teams": [
+			{"team": "lakers", "start": 1980, "end": 1991, "careerStart":1, "careerEnd":12},
+			{"team": "lakers", "start": 1996, "end": 1996, "careerStart":13, "careerEnd":13}
+		],
+		"totals": {
+			"MVP": "3",
+			"AN": "10",
+			"AD": "0",
+			"AS": "11"
+		},
+		"championships": [1980,1982,1985,1987,1988]
+	},
+	{
+		"name": "Tim Duncan",
+		"nickname": "duncan",
+		"age": {
+			"first": 21,
+			"last": 39
+		},
+		"awards": {
+			"1998": ["AS", "AD2"],
+			"1999": ["AD1", "AN1"],
+			"2000": ["AS", "AD1", "AN1"],
+			"2001": ["AS", "AD1", "AN1"],
+			"2002": ["AS", "AD1", "AN1", "MVP"],
+			"2003": ["AS", "AD1", "AN1", "MVP"],
+			"2004": ["AS", "AD2", "AN1"],
+			"2005": ["AS", "AD1", "AN1"],
+			"2006": ["AS", "AD2", "AN2"],
+			"2007": ["AS", "AD1", "AN1"],
+			"2008": ["AS", "AD1", "AN2"],
+			"2009": ["AS", "AD2", "AN2"],
+			"2010": ["AS", "AD2", "AN3"],
+			"2011": ["AS"],
+			"2012": [],
+			"2013": ["AS", "AD2", "AN1"],
+			"2014": [],
+			"2015": ["AS", "AD2", "AN3"],
+			"2016": []
+		},
+		"pics":["duncantrans1.png","duncantrans2.png","duncantrans3.png"],
+		"teams": [
+			{"team": "spurs", "start": 1998, "end": 2016, "careerStart":1, "careerEnd":19}
+		],
+		"totals": {
+			"MVP": "2",
+			"AN": "14",
+			"AD": "15",
+			"AS": "15"
+		},
+		"championships": [1999,2003,2005,2007,2014]
+	},
+	{
+
+		"name": "Larry Bird",
+		"nickname": "bird",
+		"age": {
+			"first": 23,
+			"last": 35
+		},
+		"awards": {
+			"1980": ["AS", "AN1"],
+			"1981": ["AS", "AN1"],
+			"1982": ["AS", "AD2", "AN1"],
+			"1983": ["AS", "AD2", "AN1"],
+			"1984": ["AS", "AD2", "AN1", "MVP"],
+			"1985": ["AS", "AN1", "MVP"],
+			"1986": ["AS", "AN1", "MVP"],
+			"1987": ["AS", "AN1"],
+			"1988": ["AS", "AN1"],
+			"1989": [],
+			"1990": ["AS", "AN2"],
+			"1991": ["AS"],
+			"1992": ["AS"]
+		},
+		"pics":["kobetrans1.png","kobetrans2.png","kobetrans3.png"],
+		"teams": [
+			{"team": "celtics", "start": 1980, "end": 1992, "careerStart":1, "careerEnd":13}
+		],
+		"totals": {
+			"MVP": "3",
+			"AN": "10",
+			"AD": "3",
+			"AS": "12"
+		},
+		"championships": [1981,1984,1986]
+	},
+	{
+		"name": "LeBron James",
+		"nickname": "lebron",
+		"age": {
+			"first": 19,
+			"last": 31
+		},
+		"awards": {
+			"2004": [],
+			"2005": ["AS", "AN2"],
+			"2006": ["AS", "AN1"],
+			"2007": ["AS", "AN2"],
+			"2008": ["AS", "AN1"],
+			"2009": ["AS", "AD1", "AN1", "MVP"],
+			"2010": ["AS", "AD1", "AN1", "MVP"],
+			"2011": ["AS", "AD1", "AN1"],
+			"2012": ["AS", "AD1", "AN1", "MVP"],
+			"2013": ["AS", "AD1", "AN1", "MVP"],
+			"2014": ["AS", "AD2", "AN1"],
+			"2015": ["AS", "AN1"],
+			"2016": ["AS", "AN1"]
+		},
+		"pics":["lebrontrans1.png","lebrontrans2.png","lebrontrans3.png"],
+		"teams": [
+			{"team": "cavaliers", "start": 2004, "end": 2010, "careerStart":1, "careerEnd":7},
+			{"team": "heat", "start": 2011, "end": 2014, "careerStart":8, "careerEnd":11},
+			{"team": "cavaliers", "start": 2015, "end": 2016, "careerStart":12, "careerEnd":13}
+		],
+		"totals": {
+			"MVP": "4",
+			"AN": "11",
+			"AD": "6",
+			"AS": "12"
+		},
+		"championships": [2012,2013,2016]
+	},
+	{
+		"name": "Stephen Curry",
+		"nickname": "steph",
+		"age": {
+			"first": 21,
+			"last": 27
+		},
+		"awards": {
+			"2010": [],
+			"2011": [],
+			"2012": [],
+			"2013": [],
+			"2014": ["AS", "AN2"],
+			"2015": ["AS", "AN1", "MVP"],
+			"2016": ["AS", "AN1", "MVP"]
+		},
+		"pics":["kobetrans1.png","kobetrans2.png","kobetrans3.png"],
+		"teams": [
+			{"team": "warriors", "start": 2010, "end": 2016, "careerStart":1, "careerEnd":7}
+		],
+		"totals": {
+			"MVP": "2",
+			"AN": "3",
+			"AD": "0",
+			"AS": "3"
+		},
+		"championships": [2015]
+	},
+	{
+		"name": "Kevin Garnett",
+		"nickname": "kg",
+		"age": {
+			"first": 19,
+			"last": 39
+		},
+		"awards": {
+			"1996": [],
+			"1997": ["AS"],
+			"1998": ["AS"],
+			"1999": ["AN3"],
+			"2000": ["AS", "AD1", "AN1"],
+			"2001": ["AS", "AD1", "AN2"],
+			"2002": ["AS", "AD1", "AN2"],
+			"2003": ["AS", "AD1", "AN1"],
+			"2004": ["AS", "AD1", "AN1", "MVP"],
+			"2005": ["AS", "AD1", "AN2"],
+			"2006": ["AS", "AD2"],
+			"2007": ["AS", "AD2", "AN3"],
+			"2008": ["AS", "AD1", "AN1"],
+			"2009": ["AS", "AD1"],
+			"2010": ["AS"],
+			"2011": ["AS", "AD1"],
+			"2012": ["AD2"],
+			"2013": ["AS"],
+			"2014": [],
+			"2015": [],
+			"2016": []
+		},
+		"pics":["kobetrans1.png","kobetrans2.png","kobetrans3.png"],
+		"teams": [
+			{"team": "timberwolves", "start": 1996, "end": 2007, "careerStart":1, "careerEnd":12},
+			{"team": "celtics", "start": 2008, "end": 2013, "careerStart":13, "careerEnd":18},
+			{"team": "nets", "start": 2014, "end": 2014, "careerStart":19, "careerEnd":19},
+			{"team": "timberwolves", "start": 2015, "end": 2016, "careerStart":20, "careerEnd":21}
+		],
+		"totals": {
+			"MVP": "1",
+			"AN": "9",
+			"AD": "12",
+			"AS": "15"
+		},
+		"championships": [2008]
+	},
+	{
+		"name": "Bill Russell",
+		"nickname": "russell",
+		"age": {
+			"first": 22,
+			"last": 34
+		},
+		"awards": {
+			"1957": [],
+			"1958": ["AS", "AN2","MVP"],
+			"1959": ["AS", "AN1"],
+			"1960": ["AS", "AN2"],
+			"1961": ["AS", "AN2","MVP"],
+			"1962": ["AS", "AN2","MVP"],
+			"1963": ["AS", "AN1","MVP"],
+			"1964": ["AS", "AN2"],
+			"1965": ["AS", "AN1", "MVP"],
+			"1966": ["AS", "AN2"],
+			"1967": ["AS", "AN2"],
+			"1968": ["AS", "AN2"],
+			"1969": ["AS", "AD1", "AN1"]
+		},
+		"pics":["kobetrans1.png","kobetrans2.png","kobetrans3.png"],
+		"teams": [
+			{"team": "celtics", "start": 1957, "end": 1969, "careerStart":1, "careerEnd":13}
+		],
+		"totals": {
+			"MVP": "5",
+			"AN": "12",
+			"AD": "1",
+			"AS": "12"
+		},
+		"championships": [1957,1959,1960,1961,1962,1963,1964,1965,1966,1968,1969]
+	},
+	{
+		"name": "Kareem Abdul-Jabbar",
+		"nickname": "kareem",
+		"age": {
+			"first": 22,
+			"last": 41
+		},
+		"awards": {
+			"1970": ["AS", "AD2","AN2"],
+			"1971": ["AS", "AD2","AN1", "MVP"],
+			"1972": ["AS", "AN1", "MVP"],
+			"1973": ["AS", "AN1"],
+			"1974": ["AS", "AD1", "AN1", "MVP"],
+			"1975": ["AS", "AD1"],
+			"1976": ["AS", "AD1", "AN1", "MVP"],
+			"1977": ["AS", "AD2", "AN1", "MVP"],
+			"1978": ["AD2", "AN2"],
+			"1979": ["AS", "AD1", "AN2"],
+			"1980": ["AS", "AD1", "AN1", "MVP"],
+			"1981": ["AS", "AD1", "AN1"],
+			"1982": ["AS"],
+			"1983": ["AS", "AN2"],
+			"1984": ["AS", "AD2", "AN1"],
+			"1985": ["AS", "AN2"],
+			"1986": ["AS", "AN1"],
+			"1987": ["AS"],
+			"1988": ["AS"],
+			"1989": ["AS"]
+		},
+		"pics":["kobetrans1.png","kobetrans2.png","kobetrans3.png"],
+		"teams": [
+			{"team": "bucks", "start": 1970, "end": 1975, "careerStart":1, "careerEnd":6},
+			{"team": "lakers", "start": 1976, "end": 1989, "careerStart":7, "careerEnd":20}
+		],
+		"totals": {
+			"MVP": "6",
+			"AN": "15",
+			"AD": "11",
+			"AS": "19"
+		},
+		"championships": [1971,1980,1982,1985,1987,1988]
+	},
+	{
+		"name": "Karl Malone",
+		"nickname": "mailman",
+		"age": {
+			"first": 22,
+			"last": 40
+		},
+		"awards": {
+			"1986": [],
+			"1987": [],
+			"1988": ["AS", "AD2", "AN2"],
+			"1989": ["AS", "AN1"],
+			"1990": ["AS", "AN1"],
+			"1991": ["AS", "AN1"],
+			"1992": ["AS", "AN1"],
+			"1993": ["AS", "AN1"],
+			"1994": ["AS", "AN1"],
+			"1995": ["AS", "AN1"],
+			"1996": ["AS", "AN1"],
+			"1997": ["AS", "AD1", "AN1", "MVP"],
+			"1998": ["AS", "AD1", "AN1"],
+			"1999": ["AD1", "AN1", "MVP"],
+			"2000": ["AS", "AN2"],
+			"2001": ["AS", "AN3"],
+			"2002": ["AS"],
+			"2003": [],
+			"2004": []
+		},
+		"pics":["kobetrans1.png","kobetrans2.png","kobetrans3.png"],
+		"teams": [
+			{"team": "jazz", "start": 1986, "end": 2003, "careerStart":1, "careerEnd":18},
+			{"team": "lakers", "start": 2004, "end": 2004, "careerStart":19, "careerEnd":19}
+		],
+		"totals": {
+			"MVP": "2",
+			"AN": "14",
+			"AD": "4",
+			"AS": "14"
+		},
+		"championships": []
+	},
+	{
+		"name": "Shaquille O'Neal",
+		"nickname": "shaq",
+		"age": {
+			"first": 20,
+			"last": 38
+		},
+		"awards": {
+			"1993": ["AS"],
+			"1994": ["AS", "AN3"],
+			"1995": ["AS", "AN2"],
+			"1996": ["AS", "AN3"],
+			"1997": ["AS", "AN3"],
+			"1998": ["AS", "AN1"],
+			"1999": ["AN2"],
+			"2000": ["AS", "AD2", "AN1", "MVP"],
+			"2001": ["AS", "AD2", "AN1"],
+			"2002": ["AS", "AN1"],
+			"2003": ["AS", "AD2", "AN1"],
+			"2004": ["AS", "AN1"],
+			"2005": ["AS", "AN1"],
+			"2006": ["AS", "AN1"],
+			"2007": ["AS"],
+			"2008": [],
+			"2009": ["AS","AN3"],
+			"2010": [],
+			"2011": []
+		},
+		"pics":["kobetrans1.png","kobetrans2.png","kobetrans3.png"],
+		"teams": [
+			{"team": "magic", "start": 1993, "end": 1997, "careerStart":1, "careerEnd":4},
+			{"team": "lakers", "start": 1997, "end": 2004, "careerStart":5, "careerEnd":12},
+			{"team": "heat", "start": 2005, "end": 2007, "careerStart":13, "careerEnd":15},
+			{"team": "suns", "start": 2008, "end": 2009, "careerStart":16, "careerEnd":17},
+			{"team": "cavaliers", "start": 2010, "end": 2010, "careerStart":18, "careerEnd":18},
+			{"team": "celtics", "start": 2011, "end": 2011, "careerStart":19, "careerEnd":19}
+		],
+		"totals": {
+			"MVP": "1",
+			"AN": "14",
+			"AD": "3",
+			"AS": "15"
+		},
+		"championships": [2000,2001,2002,2006]
+	},
+	{
+		"name": "Wilt Chamberlain",
+		"nickname": "wilt",
+		"age": {
+			"first": 23,
+			"last": 36
+		},
+		"awards": {
+			"1960": ["AS", "AN1","MVP"],
+			"1961": ["AS", "AN1"],
+			"1962": ["AS", "AN1"],
+			"1963": ["AS", "AN2"],
+			"1964": ["AS", "AN1"],
+			"1965": ["AS", "AN2"],
+			"1966": ["AS", "AN1", "MVP"],
+			"1967": ["AS", "AN1", "MVP"],
+			"1968": ["AS", "AN1", "MVP"],
+			"1969": ["AS"],
+			"1970": ["AS"],
+			"1971": ["AS"],
+			"1972": ["AS", "AD1", "AN2"],
+			"1973": ["AS", "AD1"]
+		},
+		"pics":["kobetrans1.png","kobetrans2.png","kobetrans3.png"],
+		"teams": [
+			{"team": "warriors", "start": 1960, "end": 1965, "careerStart":1, "careerEnd":6},
+			{"team": "76ers", "start": 1966, "end": 1968, "careerStart":7, "careerEnd":9},
+			{"team": "lakers", "start": 1969, "end": 1973, "careerStart":10, "careerEnd":14}
+		],
+		"totals": {
+			"MVP": "4",
+			"AN": "10",
+			"AD": "2",
+			"AS": "14"
+		},
+		"championships": [1967,1972]
+	},
+	{
+		"name": "Jerry West",
+		"nickname": "west",
+		"age": {
+			"first": 22,
+			"last": 35
+		},
+		"awards": {
+			"1961": ["AS", "AN1"],
+			"1962": ["AS", "AN1"],
+			"1963": ["AS", "AN1"],
+			"1964": ["AS", "AN1"],
+			"1965": ["AS", "AN1"],
+			"1966": ["AS", "AN1"],
+			"1967": ["AS", "AN1"],
+			"1968": ["AS", "AN2"],
+			"1969": ["AS", "AD2", "AN2"],
+			"1970": ["AS", "AD1", "AN1"],
+			"1971": ["AS", "AD1", "AN1"],
+			"1972": ["AS", "AD1", "AN1"],
+			"1973": ["AS", "AD1", "AN1"],
+			"1974": ["AS"]
+		},
+		"pics":["kobetrans1.png","kobetrans2.png","kobetrans3.png"],
+		"teams": [
+			{"team": "lakers", "start": 1961, "end": 1974, "careerStart":1, "careerEnd":14}
+		],
+		"totals": {
+			"MVP": "0",
+			"AN": "13",
+			"AD": "5",
+			"AS": "14"
+		},
+		"championships": [1972]
+	},
+	{
+		"name": "Oscar Robertson",
+		"nickname": "oscar",
+		"age": {
+			"first": 22,
+			"last": 35
+		},
+		"awards": {
+			"1961": ["AS", "AN1"],
+			"1962": ["AS", "AN1"],
+			"1963": ["AS", "AN1"],
+			"1964": ["AS", "AN1", "MVP"],
+			"1965": ["AS", "AN1"],
+			"1966": ["AS", "AN1"],
+			"1967": ["AS", "AN1"],
+			"1968": ["AS", "AN1"],
+			"1969": ["AS", "AN1"],
+			"1970": ["AS", "AN2"],
+			"1971": ["AS", "AN2"],
+			"1972": ["AS"],
+			"1973": [],
+			"1974": []
+		},
+		"pics":["kobetrans1.png","kobetrans2.png","kobetrans3.png","kobetrans4.png"],
+		"teams": [
+			{"team": "royals", "start": 1961, "end": 1970, "careerStart":1, "careerEnd":10},
+			{"team": "bucks", "start": 1971, "end": 1974, "careerStart":11, "careerEnd":14}
+		],
+		"totals": {
+			"MVP": "1",
+			"AN": "11",
+			"AD": "0",
+			"AS": "12"
+		},
+		"championships": [1971]
+	},
+	{
+		"name": "Hakeem Olajuwon",
+		"nickname": "hakeem",
+		"age": {
+			"first": 22,
+			"last": 39
+		},
+		"awards": {
+			"1985": ["AS", "AD2"],
+			"1986": ["AS", "AN2"],
+			"1987": ["AS", "AD1", "AN1"],
+			"1988": ["AS", "AD1", "AN1"],
+			"1989": ["AS", "AN1"],
+			"1990": ["AS", "AD1", "AN2"],
+			"1991": ["AD2", "AN3"],
+			"1992": ["AS"],
+			"1993": ["AS", "AD1", "AN1"],
+			"1994": ["AS", "AD1", "AN1", "MVP"],
+			"1995": ["AS", "AN3"],
+			"1996": ["AS", "AD2", "AN2"],
+			"1997": ["AS", "AD2", "AN1"],
+			"1998": [],
+			"1999": ["AN3"],
+			"2000": [],
+			"2001": [],
+			"2002": []
+		},
+		"pics":["jordantrans1.png","jordantrans2.png","jordantrans3.jpg"],
+		"teams": [
+			{"team": "rockets", "start": 1985, "end": 2001, "careerStart":1, "careerEnd":17},
+			{"team": "raptors", "start": 2002, "end": 2002, "careerStart":18, "careerEnd":18}
+		],
+		"totals": {
+			"MVP": "1",
+			"AN": "12",
+			"AD": "9",
+			"AS": "12"
+		},
+		"championships": [1994,1995]
+	},
+	{
+		"name": "Steve Nash", 
+		"nickname": "nash",
+		"age": {
+			"first": 22,
+			"last": 40
+		},
+		"awards": {
+			"1997": [],
+			"1998": [],
+			"1999": [],
+			"2000": [],
+			"2001": [],
+			"2002": ["AS", "AN3"],
+			"2003": ["AS", "AN3"],
+			"2004": [],
+			"2005": ["AS", "AN1", "MVP"],
+			"2006": ["AS", "AN1", "MVP"],
+			"2007": ["AS", "AN1"],
+			"2008": ["AS", "AN2"],
+			"2009": [],
+			"2010": ["AS", "AN2"],
+			"2011": [],
+			"2012": ["AS"],
+			"2013": [],
+			"2014": [],
+			"2015": []
+		},
+		"pics":["kobetrans1.png","kobetrans2.png","kobetrans3.png"],
+		"teams": [
+			{"team": "suns", "start": 1997, "end": 1998, "careerStart":1, "careerEnd":2},
+			{"team": "mavericks", "start": 1999, "end": 2004, "careerStart":3, "careerEnd":8},
+			{"team": "suns", "start": 2005, "end": 2012, "careerStart":9, "careerEnd":16},
+			{"team": "lakers", "start": 2013, "end": 2015, "careerStart":17, "careerEnd":19}
+		],
+		"totals": {
+			"MVP": "2",
+			"AN": "7",
+			"AD": "0",
+			"AS": "8"
+		},
+		"championships": []
+	},
+	{
+		"name": "Dirk Nowitzki", 
+		"nickname": "dirk",
+		"age": {
+			"first": 20,
+			"last": 37
+		},
+		"awards": {
+			"1999": [],
+			"2000": [],
+			"2001": ["AN3"],
+			"2002": ["AS", "AN2"],
+			"2003": ["AS", "AN2"],
+			"2004": ["AS", "AN3"],
+			"2005": ["AS", "AN1"],
+			"2006": ["AS", "AN1"],
+			"2007": ["AS", "AN1", "MVP"],
+			"2008": ["AS", "AN2"],
+			"2009": ["AS", "AN1"],
+			"2010": ["AS", "AN2"],
+			"2011": ["AS", "AN2"],
+			"2012": ["AS", "AN3"],
+			"2013": [],
+			"2014": ["AS"],
+			"2015": ["AS"],
+			"2016": []
+		},
+		"pics":["kobetrans1.png","kobetrans2.png","kobetrans3.png"],
+		"teams": [
+			{"team": "mavericks", "start": 1999, "end": 2016, "careerStart":1, "careerEnd":18}
+		],
+		"totals": {
+			"MVP": "1",
+			"AN": "12",
+			"AD": "0",
+			"AS": "13"
+		},
+		"championships": [2011]
+	},
+	{
+		"name": "Elgin Baylor",
+		"nickname": "elgin",
+		"age": {
+			"first": 24,
+			"last": 37
+		},
+		"awards": {
+			"1959": ["AS", "AN1"],
+			"1960": ["AS", "AN1"],
+			"1961": ["AS", "AN1"],
+			"1962": ["AS", "AN1"],
+			"1963": ["AS", "AN1"],
+			"1964": ["AS", "AN1"],
+			"1965": ["AS", "AN1"],
+			"1966": [],
+			"1967": ["AS", "AN1"],
+			"1968": ["AS", "AN1"],
+			"1969": ["AS", "AN1"],
+			"1970": ["AS"],
+			"1971": [],
+			"1972": []
+		},
+		"pics":["kobetrans1.png","kobetrans2.png","kobetrans3.png"],
+		"teams": [
+			{"team": "lakers", "start": 1959, "end": 1972, "careerStart":1, "careerEnd":14}
+		],
+		"totals": {
+			"MVP": "0",
+			"AN": "10",
+			"AD": "0",
+			"AS": "11"
+		},
+		"championships": []
+	},
+	{
+		"name": "Dwyane Wade",
+		"nickname": "dwade",
+		"age": {
+			"first": 22,
+			"last": 34
+		},
+		"awards": {
+			"2004": [],
+			"2005": ["AS", "AD2", "AN2"],
+			"2006": ["AS", "AN2"],
+			"2007": ["AS", "AN3"],
+			"2008": ["AS"],
+			"2009": ["AS", "AD2", "AN1"],
+			"2010": ["AS", "AD2", "AN1"],
+			"2011": ["AS", "AN2"],
+			"2012": ["AS", "AN3"],
+			"2013": ["AS", "AN3"],
+			"2014": ["AS"],
+			"2015": ["AS"],
+			"2016": ["AS"]
+		},
+		"pics":["lebrontrans1.png","lebrontrans2.png","lebrontrans3.png"],
+		"teams": [
+			{"team": "heat", "start": 2004, "end": 2016, "careerStart":1, "careerEnd":13}
+		],
+		"totals": {
+			"MVP": "0",
+			"AN": "8",
+			"AD": "3",
+			"AS": "12"
+		},
+		"championships": [2006,2012,2013]
+	},
+	{
+		"name": "Moses Malone",
+		"nickname": "moses",
+		"age": {
+			"first": 21,
+			"last": 39
+		},
+		"awards": {
+			"1977": [],
+			"1978": ["AS"],
+			"1979": ["AS", "AD2", "AN1", "MVP"],
+			"1980": ["AS", "AN1"],
+			"1981": ["AS", "AN1"],
+			"1982": ["AS", "AN1", "MVP"],
+			"1983": ["AS", "AD1", "AN2", "MVP"],
+			"1984": ["AS", "AN2"],
+			"1985": ["AS", "AN1"],
+			"1986": ["AS"],
+			"1987": ["AS", "AN2"],
+			"1988": ["AS"],
+			"1989": ["AS"],
+			"1990": [],
+			"1991": [],
+			"1992": [],
+			"1993": [],
+			"1994": [],
+			"1995": []
+		},
+		"pics":["kobetrans1.png","kobetrans2.png","kobetrans3.png"],
+		"teams": [
+			{"team": "rockets", "start": 1977, "end": 1982, "careerStart":1, "careerEnd":6},
+			{"team": "76ers", "start": 1983, "end": 1986, "careerStart":7, "careerEnd":10},
+			{"team": "wizards", "start": 1987, "end": 1988, "careerStart":11, "careerEnd":12},
+			{"team": "hawks", "start": 1989, "end": 1991, "careerStart":13, "careerEnd":15},
+			{"team": "bucks", "start": 1992, "end": 1993, "careerStart":16, "careerEnd":17},
+			{"team": "76ers", "start": 1994, "end": 1994, "careerStart":18, "careerEnd":18},
+			{"team": "spurs", "start": 1995, "end": 1995, "careerStart":19, "careerEnd":19}
+		],
+		"totals": {
+			"MVP": "3",
+			"AN": "8",
+			"AD": "2",
+			"AS": "13"
+		},
+		"championships": [1983]
+	},
+	{
+		"name": "Kevin Durant",
+		"nickname": "durant",
+		"age": {
+			"first": 19,
+			"last": 27
+		},
+		"awards": {
+			"2008": [],
+			"2009": [],
+			"2010": ["AS", "AN1"],
+			"2011": ["AS", "AN1"],
+			"2012": ["AS", "AN1"],
+			"2013": ["AS", "AN1"],
+			"2014": ["AS", "AN1", "MVP"],
+			"2015": ["AS"],
+			"2016": ["AS", "AN2"]
+		},
+		"pics":["kobetrans1.png","kobetrans2.png","kobetrans3.png"],
+		"teams": [
+			{"team": "sonics", "start": 2008, "end": 2008, "careerStart":1, "careerEnd":1},
+			{"team": "thunder", "start": 2009, "end": 2016, "careerStart":2, "careerEnd":9}
+		],
+		"totals": {
+			"MVP": "1",
+			"AN": "3",
+			"AD": "0",
+			"AS": "3"
+		},
+		"championships": []
+	}
+]

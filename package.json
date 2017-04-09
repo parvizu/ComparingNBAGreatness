@@ -1,0 +1,29 @@
+{
+  "name": "nba-accolades",
+  "version": "1.0.0",
+  "description": "",
+  "main": "webpack.config.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "babel-core": "^6.7.6",
+    "babel-loader": "^6.2.4",
+    "babel-preset-react": "^6.5.0",
+    "css-loader": "^0.23.1",
+    "d3": "^3.5.17",
+    "extract-text-webpack-plugin": "^1.0.1",
+    "file-loader": "^0.8.5",
+    "html-webpack-plugin": "^2.15.0",
+    "html2canvas": "^0.5.0-beta4",
+    "jquery": "^2.2.3",
+    "react": "^15.0.2",
+    "react-dom": "^15.0.2",
+    "react-faux-dom": "^2.4.0",
+    "style-loader": "^0.13.1",
+    "url-loader": "^0.5.7",
+    "webpack-dev-server": "^1.14.1"
+  }
+}
