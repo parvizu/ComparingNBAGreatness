@@ -1,29 +1,12 @@
 var React = require('react'),
 	ReactDOM = require('react-dom'),
-	Visualization = require('./Visualization'),
-	data = require('./PlayersData.json');
-	html2canvas = require('html2canvas');
-
-data.sort(function(a, b){
-    var p1 = a.name.split(' ')[1],
-    	p2 = b.name.split(' ')[1];
-
-    if (p1 === "'Magic'")
-    	p1 = "Johnson";
-    if (p2 === "'Magic'")
-    	p2 = "Johnson";
-
-
-    if(p1 < p2) return -1;
-    if(p1 > p2) return 1;
-    return 0;
-})
+	Visualization = require('./Visualization');
 
 
 var Player = React.createClass({
 	getInitialState: function() {
 		return {
-			'selected': ''
+			'selected': this.props.isSelected
 		}
 	},
 
@@ -49,7 +32,7 @@ var Player = React.createClass({
 
 	render: function() {
 		// if (this.props.player.nickname === 'kobe')
-			var img = require('./img/'+this.props.player.nickname+'jerseylarge.png');
+			var img = require('./img/'+this.props.player.nickname+'jerseysmallX.png');
 		// else 
 		// 	var img = require('./img/'+this.props.player.nickname+'jersey.png');
 		// 	var img = require('./img/kobejersey.png');
@@ -67,9 +50,10 @@ var PlayerList = React.createClass({
 
 	render: function() {
 		var self = this;
-		var players = this.props.data.map(function(player) {
+		var players = self.props.data.map(function(player) {
+			var isSelected = self.props.selectedPlayers.indexOf(player.nickname) !== -1 ? 'selected' : '';
 			return (
-				<Player player={player} onPlayerSelect={self.props.onPlayerSelect} />
+				<Player key={player.nickname+"-key"} player={player} onPlayerSelect={self.props.onPlayerSelect} isSelected={isSelected} />
 			)
 		});
 
@@ -108,15 +92,11 @@ var Menu = React.createClass({
 
 
 	render: function() {
-		var helpIcon = require('./img/helpIconWhite.png');
 		return (
 			<div id="menu">
 				<div className={this.state.career} onClick={this.onSelectMode} value="career">	By Seasons in NBA </div>  
 				<div className={this.state.calendar} onClick={this.onSelectMode} value="calendar"> By Calendar Year </div> 
 				<div className={this.state.age} onClick={this.onSelectMode} value="age"> By Player&#39;s Age </div>
-				<div id="helpArea">
-					<img id="help" src={helpIcon} />
-				</div>
 			</div>
 			);
 	}
@@ -125,8 +105,10 @@ var Menu = React.createClass({
 var VisualizationLegend = React.createClass({
 	
 	render: function() {
+		var helpIcon = require('./img/helpIconWhite.png');
 		return (
-				<div id="vizLegend">
+			<div id="vizLegend">
+				<div id="legendSection">
 					<div className="legendScale">
 						<h5 className="selectionType">Most Valuable Player</h5>
 					</div>
@@ -171,6 +153,10 @@ var VisualizationLegend = React.createClass({
 						<div className="allstar firstteam"></div>
 					</div>
 				</div>
+				<div id="helpArea">
+					<img id="help" src={helpIcon} />
+				</div>
+			</div>
 			)
 	}
 });
@@ -179,10 +165,14 @@ var VisualizationLegend = React.createClass({
 // Main component
 var PlayerViz = React.createClass({
 	getInitialState: function() {
+		var defaultSelectedPlayers = ['jordan','lebron','kobe'];
+		var defaultTimeSpan = this.getTimeSpan(defaultSelectedPlayers);
+
+
 		return {
-			"selected": [],
+			"selected": defaultSelectedPlayers,
 			"vizMode": 'career',
-			"timespan": {},
+			"timespan": defaultTimeSpan,
 			"popup": "hide",
 			"img": ""
 		}
@@ -194,7 +184,7 @@ var PlayerViz = React.createClass({
 		});
 	},
 
-	setTimeSpan: function() {
+	getTimeSpan: function(selectedPlayers) {
 		var start = 2017,
 			end = 1,
 			years = [],
@@ -205,9 +195,9 @@ var PlayerViz = React.createClass({
 			careerYears = 0,
 			players = [];
 
-		for (var j = 0; j<data.length; j++) {
-			if (this.state.selected.indexOf(data[j].nickname) !== -1) {
-				players.push(data[j]);
+		for (var j = 0; j<this.props.data.length; j++) {
+			if (selectedPlayers.indexOf(this.props.data[j].nickname) !== -1) {
+				players.push(this.props.data[j]);
 			}
 		}
 
@@ -237,17 +227,15 @@ var PlayerViz = React.createClass({
 			}
 		}
 
-		this.setState({
-			timespan: {
-				"start": start,
-				"end": end,
-				"years": careerYears,
-				"age": {
-					"first": startAge,
-					"last": endAge
-				}
+		return {
+			"start": start,
+			"end": end,
+			"years": careerYears,
+			"age": {
+				"first": startAge,
+				"last": endAge
 			}
-		});
+		};
 	},
 
 	handlePlayerSelect: function(e) {
@@ -258,30 +246,35 @@ var PlayerViz = React.createClass({
 			this.state.selected.splice(position,1);
 		}
 
-		this.setState({selected: this.state.selected});
-		this.setTimeSpan();
+		var newTimeSpan = this.getTimeSpan(this.state.selected);
+
+		this.setState({
+			selected: this.state.selected,
+			timespan: newTimeSpan
+		});
+		
 	},
 
 	
-	createImage: function(e) {
-		var self = this;
+	// createImage: function(e) {
+	// 	var self = this;
 		
-		e.preventDefault();
+	// 	e.preventDefault();
 
-		html2canvas(document.getElementById('app'), {
-			allowTaint: true,
-			onrendered: function(canvas) {
-				console.log(canvas);
-				var png = canvas.toDataURL("image/png");
-				// document.getElementById('popup').append('<img src="'+img+'" ">');
+	// 	html2canvas(document.getElementById('app'), {
+	// 		allowTaint: true,
+	// 		onrendered: function(canvas) {
+	// 			console.log(canvas);
+	// 			var png = canvas.toDataURL("image/png");
+	// 			// document.getElementById('popup').append('<img src="'+img+'" ">');
 				
-				self.setState({
-					"popup": "",
-					"img" : png
-				});
-			}
-		});
-	},
+	// 			self.setState({
+	// 				"popup": "",
+	// 				"img" : png
+	// 			});
+	// 		}
+	// 	});
+	// },
 
 	closeImage: function() {
 		this.setState({
@@ -297,6 +290,7 @@ var PlayerViz = React.createClass({
 		return (
 			<div id='app'>
 				<div id="header">
+					<div id="updated">v1.3 (10/29/17)</div>
 					<img src={nbaLogo} /> 
 					<h1> Comparing Greatness</h1> <a href="http://www.parvizu.com" target="_blank" id="madeby">by Pablo Arvizu</a> <a href="https://twitter.com/sirgalahad88" target="_blank" id="twitterLink"><img src={twitterLink} /></a>
 					<div className="addthis_sharing_toolbox"></div>
@@ -308,20 +302,22 @@ var PlayerViz = React.createClass({
 						Explore how some of the best players in NBA history stack up against each other. See how their careers unfolded by looking at when the awards and titles were won, and how maturity and experience played a part in their success. Get a chance to compare the greatest this game has ever seen, whether they be past or rising stars.
 					</p>
 				</div>
-				<PlayerList data={data} onPlayerSelect={this.handlePlayerSelect} />
-				<VisualizationLegend />
-				<Menu changeViewMode={this.changeViewMode} />
+				<PlayerList data={this.props.data} onPlayerSelect={this.handlePlayerSelect} selectedPlayers={this.state.selected}/>
 				
-				<Visualization players={this.state.selected} data={data} mode={this.state.vizMode} timespan={this.state.timespan} />
+				<Menu changeViewMode={this.changeViewMode} />
+				<VisualizationLegend />
+				
+				
+				<Visualization players={this.state.selected} data={this.props.data} mode={this.state.vizMode} timespan={this.state.timespan} images={this.props.images}/>
 				
 				<div className={instructions} id="instructions" >
 					<h1>To compare, select one or more players by clicking on their jerseys above</h1>
 				</div>
 				<div className="footer">
 					<a href="https://twitter.com/sirgalahad88" className="twitter-follow-button" data-show-count="false">Follow @sirgalahad88</a>&nbsp;&nbsp;<span className="vertBar">|</span>&nbsp;&nbsp;
-					<a href="http://www.parvizu.com" target="_blank" >www.parvizu.com</a>&nbsp;&nbsp;<span className="vertBar">|</span>&nbsp;&nbsp;
-					<a href="http://www.morethanjustsports.com" target="_blank" >www.morethanjustsports.com</a> &nbsp;&nbsp;<span className="vertBar">|</span>&nbsp;&nbsp;
-					<a >Image Credits: Logos and Jerseys are property of the ©NBA </a>
+					<a className="footer-link" href="http://www.parvizu.com" target="_blank" >www.parvizu.com</a>&nbsp;&nbsp;<span className="vertBar">|</span>&nbsp;&nbsp;
+					<a className="footer-link" href="http://www.morethanjustsports.com" target="_blank" >www.morethanjustsports.com</a> &nbsp;&nbsp;<span className="vertBar">|</span>&nbsp;&nbsp;
+					<a>Image Credits: Logos and Jerseys are property of the ©NBA </a>
 				</div>
 			</div>
 		);

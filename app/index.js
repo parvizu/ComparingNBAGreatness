@@ -18,6 +18,35 @@ var React = require('react');
 var ReactDOM = require('react-dom');
 
 var PlayerViz = require('./PlayerViz');
+
+var data = require('./PlayersData.json');
+var playersImages = {};
+data.sort(function(a, b){
+    var p1 = a.name.split(' ')[1],
+    	p2 = b.name.split(' ')[1];
+
+    if (p1 === "'Magic'")
+    	p1 = "Johnson";
+    if (p2 === "'Magic'")
+    	p2 = "Johnson";
+
+
+    if(p1 < p2) return -1;
+    if(p1 > p2) return 1;
+    return 0;
+});
+
+// Preloading all player images to avoid having to load them each time.
+data.forEach(function(playerData) {
+	var playerPics = []
+	playerData.pics.forEach(function(pic) {
+		var route = './img/'+pic;
+		playerPics.push(require(route));
+	});
+
+	playersImages[playerData.nickname] = playerPics
+});
+
 require("./style.css");
 
-ReactDOM.render(<PlayerViz />, document.body);
+ReactDOM.render(<PlayerViz data={data} images={playersImages}/>, document.body);

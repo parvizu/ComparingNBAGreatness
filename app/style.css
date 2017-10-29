@@ -4,9 +4,16 @@ body {
 	background-color: rgba(0,0,0,.8);
 }
 
+
 div#app {
     width: 1000px;
     margin: 0 auto;
+}
+
+div#updated {
+    text-align: right;
+    font-size: 9px;
+    color: silver;
 }
 
 div#popup {
@@ -131,13 +138,13 @@ div#menu {
     /* color: white; */
     /* width: 515px; */
     font-family: helvetica;
-    margin-left: 5px;
+    margin-left: 10px;
     /* width: 945px; */
     font-size: 10px;
     /* margin-top: 30px; */
     /* border-radius: 1px; */
     background-color: white;
-    margin-top: 4px;
+    margin-top: 5px;
     display: inline-block;
     vertical-align: top;
 }
@@ -168,16 +175,19 @@ div#menu {
     /* background-color: darkorange; */
     color: darkorange;
     /* font-weight: bold; */
-    border-bottom: solid 3px darkorange
+    border-bottom: solid 4px darkorange
 }
 
 div#helpArea {
     background-color: darkorange;
-    width: 35px;
+    width: 30px;
     padding: 0px;
-    height: 22px;
+    height: 23px;
     padding-top: 7px;
     border-bottom: solid 3px darkorange;
+    display: inline-block;
+    margin-left: 7px;
+    text-align: center;
 }
 
 img#help {
@@ -228,9 +238,15 @@ div#vizLegend {
     /* width: 285px; */
     /* height: 50px; */
     background-color: white;
-    margin-top: 4px;
-    margin-left: 10px;
-    padding: 3px;
+    margin-top: 5px;
+    margin-left: 8px;
+    /* padding: 3px; */
+}
+
+div#legendSection {
+    display: inline-block;
+    vertical-align: middle;
+    margin-bottom: 3px;
 }
 
 .legendScale h5 {
@@ -297,6 +313,10 @@ div#instructions {
     margin-top: 0px;
     /*font-size: 13px;*/
     text-decoration: none;
+}
+
+.footer .footer-link:hover {
+    color: silver;
 }
 
 .vertBar {

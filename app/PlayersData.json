@@ -64,7 +64,7 @@
 			"2002": ["AS"],
 			"2003": ["AS"]
 		},
-		"pics":["jordantrans1.png","jordantrans2.png","jordantrans3.jpg"],
+		"pics":["jordantrans1.png","jordantrans2.png","jordantrans3.png"],
 		"teams": [
 			{"team": "bulls", "start": 1985, "end": 1993, "careerStart":1, "careerEnd":9},
 			{"team": "bulls", "start": 1995, "end": 1998, "careerStart":10, "careerEnd":13},
@@ -176,7 +176,7 @@
 			"1991": ["AS"],
 			"1992": ["AS"]
 		},
-		"pics":["kobetrans1.png","kobetrans2.png","kobetrans3.png"],
+		"pics":["birdtrans1.png","birdtrans2.png","birdtrans3.png"],
 		"teams": [
 			{"team": "celtics", "start": 1980, "end": 1992, "careerStart":1, "careerEnd":13}
 		],
@@ -193,7 +193,7 @@
 		"nickname": "lebron",
 		"age": {
 			"first": 19,
-			"last": 31
+			"last": 33
 		},
 		"awards": {
 			"2004": [],
@@ -208,19 +208,21 @@
 			"2013": ["AS", "AD1", "AN1", "MVP"],
 			"2014": ["AS", "AD2", "AN1"],
 			"2015": ["AS", "AN1"],
-			"2016": ["AS", "AN1"]
+			"2016": ["AS", "AN1"],
+			"2017": ["AS", "AN1"],
+			"2018": []
 		},
 		"pics":["lebrontrans1.png","lebrontrans2.png","lebrontrans3.png"],
 		"teams": [
 			{"team": "cavaliers", "start": 2004, "end": 2010, "careerStart":1, "careerEnd":7},
 			{"team": "heat", "start": 2011, "end": 2014, "careerStart":8, "careerEnd":11},
-			{"team": "cavaliers", "start": 2015, "end": 2016, "careerStart":12, "careerEnd":13}
+			{"team": "cavaliers", "start": 2015, "end": 2018, "careerStart":12, "careerEnd":15}
 		],
 		"totals": {
 			"MVP": "4",
-			"AN": "11",
+			"AN": "13",
 			"AD": "6",
-			"AS": "12"
+			"AS": "13"
 		},
 		"championships": [2012,2013,2016]
 	},
@@ -229,7 +231,7 @@
 		"nickname": "steph",
 		"age": {
 			"first": 21,
-			"last": 27
+			"last": 29
 		},
 		"awards": {
 			"2010": [],
@@ -238,19 +240,21 @@
 			"2013": [],
 			"2014": ["AS", "AN2"],
 			"2015": ["AS", "AN1", "MVP"],
-			"2016": ["AS", "AN1", "MVP"]
+			"2016": ["AS", "AN1", "MVP"],
+			"2017": ["AS", "AN2"],
+			"2018": []
 		},
-		"pics":["kobetrans1.png","kobetrans2.png","kobetrans3.png"],
+		"pics":["stephtrans1.png","stephtrans2.png","stephtrans3.png"],
 		"teams": [
-			{"team": "warriors", "start": 2010, "end": 2016, "careerStart":1, "careerEnd":7}
+			{"team": "warriors", "start": 2010, "end": 2018, "careerStart":1, "careerEnd":9}
 		],
 		"totals": {
 			"MVP": "2",
-			"AN": "3",
+			"AN": "4",
 			"AD": "0",
-			"AS": "3"
+			"AS": "4"
 		},
-		"championships": [2015]
+		"championships": [2015,2017]
 	},
 	{
 		"name": "Kevin Garnett",
@@ -282,7 +286,7 @@
 			"2015": [],
 			"2016": []
 		},
-		"pics":["kobetrans1.png","kobetrans2.png","kobetrans3.png"],
+		"pics":["kgtrans1.png","kgtrans2.png","kgtrans3.png"],
 		"teams": [
 			{"team": "timberwolves", "start": 1996, "end": 2007, "careerStart":1, "careerEnd":12},
 			{"team": "celtics", "start": 2008, "end": 2013, "careerStart":13, "careerEnd":18},
@@ -319,7 +323,7 @@
 			"1968": ["AS", "AN2"],
 			"1969": ["AS", "AD1", "AN1"]
 		},
-		"pics":["kobetrans1.png","kobetrans2.png","kobetrans3.png"],
+		"pics":["russelltrans1.png","russelltrans2.png","russelltrans3.png"],
 		"teams": [
 			{"team": "celtics", "start": 1957, "end": 1969, "careerStart":1, "careerEnd":13}
 		],
@@ -360,7 +364,7 @@
 			"1988": ["AS"],
 			"1989": ["AS"]
 		},
-		"pics":["kobetrans1.png","kobetrans2.png","kobetrans3.png"],
+		"pics":["kareemtrans1.png","kareemtrans2.png","kareemtrans3.png"],
 		"teams": [
 			{"team": "bucks", "start": 1970, "end": 1975, "careerStart":1, "careerEnd":6},
 			{"team": "lakers", "start": 1976, "end": 1989, "careerStart":7, "careerEnd":20}
@@ -401,7 +405,7 @@
 			"2003": [],
 			"2004": []
 		},
-		"pics":["kobetrans1.png","kobetrans2.png","kobetrans3.png"],
+		"pics":["mailmantrans1.png","mailmantrans2.png","mailmantrans3.png"],
 		"teams": [
 			{"team": "jazz", "start": 1986, "end": 2003, "careerStart":1, "careerEnd":18},
 			{"team": "lakers", "start": 2004, "end": 2004, "careerStart":19, "careerEnd":19}
@@ -442,7 +446,7 @@
 			"2010": [],
 			"2011": []
 		},
-		"pics":["kobetrans1.png","kobetrans2.png","kobetrans3.png"],
+		"pics":["shaqtrans1.png","shaqtrans2.png","shaqtrans3.png"],
 		"teams": [
 			{"team": "magic", "start": 1993, "end": 1997, "careerStart":1, "careerEnd":4},
 			{"team": "lakers", "start": 1997, "end": 2004, "careerStart":5, "careerEnd":12},
@@ -482,7 +486,7 @@
 			"1972": ["AS", "AD1", "AN2"],
 			"1973": ["AS", "AD1"]
 		},
-		"pics":["kobetrans1.png","kobetrans2.png","kobetrans3.png"],
+		"pics":["wilttrans1.png","wilttrans2.png","wilttrans3.png"],
 		"teams": [
 			{"team": "warriors", "start": 1960, "end": 1965, "careerStart":1, "careerEnd":6},
 			{"team": "76ers", "start": 1966, "end": 1968, "careerStart":7, "careerEnd":9},
@@ -519,7 +523,7 @@
 			"1973": ["AS", "AD1", "AN1"],
 			"1974": ["AS"]
 		},
-		"pics":["kobetrans1.png","kobetrans2.png","kobetrans3.png"],
+		"pics":["westtrans1.png","westtrans2.png","westtrans3.png"],
 		"teams": [
 			{"team": "lakers", "start": 1961, "end": 1974, "careerStart":1, "careerEnd":14}
 		],
@@ -554,7 +558,7 @@
 			"1973": [],
 			"1974": []
 		},
-		"pics":["kobetrans1.png","kobetrans2.png","kobetrans3.png","kobetrans4.png"],
+		"pics":["oscartrans1.png","oscartrans2.png","oscartrans3.png"],
 		"teams": [
 			{"team": "royals", "start": 1961, "end": 1970, "careerStart":1, "careerEnd":10},
 			{"team": "bucks", "start": 1971, "end": 1974, "careerStart":11, "careerEnd":14}
@@ -594,7 +598,7 @@
 			"2001": [],
 			"2002": []
 		},
-		"pics":["jordantrans1.png","jordantrans2.png","jordantrans3.jpg"],
+		"pics":["hakeemtrans1.png","hakeemtrans2.png","hakeemtrans3.png"],
 		"teams": [
 			{"team": "rockets", "start": 1985, "end": 2001, "careerStart":1, "careerEnd":17},
 			{"team": "raptors", "start": 2002, "end": 2002, "careerStart":18, "careerEnd":18}
@@ -635,7 +639,7 @@
 			"2014": [],
 			"2015": []
 		},
-		"pics":["kobetrans1.png","kobetrans2.png","kobetrans3.png"],
+		"pics":["nashtrans1.png","nashtrans2.png","nashtrans3.png"],
 		"teams": [
 			{"team": "suns", "start": 1997, "end": 1998, "careerStart":1, "careerEnd":2},
 			{"team": "mavericks", "start": 1999, "end": 2004, "careerStart":3, "careerEnd":8},
@@ -655,7 +659,7 @@
 		"nickname": "dirk",
 		"age": {
 			"first": 20,
-			"last": 37
+			"last": 39
 		},
 		"awards": {
 			"1999": [],
@@ -675,11 +679,13 @@
 			"2013": [],
 			"2014": ["AS"],
 			"2015": ["AS"],
-			"2016": []
+			"2016": [],
+			"2017": [],
+			"2018": []
 		},
-		"pics":["kobetrans1.png","kobetrans2.png","kobetrans3.png"],
+		"pics":["dirktrans1.png","dirktrans2.png","dirktrans3.png"],
 		"teams": [
-			{"team": "mavericks", "start": 1999, "end": 2016, "careerStart":1, "careerEnd":18}
+			{"team": "mavericks", "start": 1999, "end": 2018, "careerStart":1, "careerEnd":20}
 		],
 		"totals": {
 			"MVP": "1",
@@ -712,7 +718,7 @@
 			"1971": [],
 			"1972": []
 		},
-		"pics":["kobetrans1.png","kobetrans2.png","kobetrans3.png"],
+		"pics":["elgintrans1.png","elgintrans2.png","elgintrans3.png"],
 		"teams": [
 			{"team": "lakers", "start": 1959, "end": 1972, "careerStart":1, "careerEnd":14}
 		],
@@ -729,7 +735,7 @@
 		"nickname": "dwade",
 		"age": {
 			"first": 22,
-			"last": 34
+			"last": 36
 		},
 		"awards": {
 			"2004": [],
@@ -744,11 +750,15 @@
 			"2013": ["AS", "AN3"],
 			"2014": ["AS"],
 			"2015": ["AS"],
-			"2016": ["AS"]
+			"2016": ["AS"],
+			"2017": [],
+			"2018": []
 		},
-		"pics":["lebrontrans1.png","lebrontrans2.png","lebrontrans3.png"],
+		"pics":["dwadetrans1.png","dwadetrans2.png","dwadetrans3.png"],
 		"teams": [
-			{"team": "heat", "start": 2004, "end": 2016, "careerStart":1, "careerEnd":13}
+			{"team": "heat", "start": 2004, "end": 2016, "careerStart":1, "careerEnd":13},
+			{"team": "bulls", "start": 2017, "end": 2017, "careerStart":14, "careerEnd":14},
+			{"team": "cavaliers", "start": 2018, "end": 2018, "careerStart":15, "careerEnd":15}
 		],
 		"totals": {
 			"MVP": "0",
@@ -786,7 +796,7 @@
 			"1994": [],
 			"1995": []
 		},
-		"pics":["kobetrans1.png","kobetrans2.png","kobetrans3.png"],
+		"pics":["mosestrans1.png","mosestrans2.png","mosestrans3.png"],
 		"teams": [
 			{"team": "rockets", "start": 1977, "end": 1982, "careerStart":1, "careerEnd":6},
 			{"team": "76ers", "start": 1983, "end": 1986, "careerStart":7, "careerEnd":10},
@@ -809,7 +819,7 @@
 		"nickname": "durant",
 		"age": {
 			"first": 19,
-			"last": 27
+			"last": 29
 		},
 		"awards": {
 			"2008": [],
@@ -820,19 +830,22 @@
 			"2013": ["AS", "AN1"],
 			"2014": ["AS", "AN1", "MVP"],
 			"2015": ["AS"],
-			"2016": ["AS", "AN2"]
+			"2016": ["AS", "AN2"],
+			"2017": ["AS", "AN2"],
+			"2018": []
 		},
-		"pics":["kobetrans1.png","kobetrans2.png","kobetrans3.png"],
+		"pics":["duranttrans1.png","duranttrans2.png","duranttrans3.png"],
 		"teams": [
 			{"team": "sonics", "start": 2008, "end": 2008, "careerStart":1, "careerEnd":1},
-			{"team": "thunder", "start": 2009, "end": 2016, "careerStart":2, "careerEnd":9}
+			{"team": "thunder", "start": 2009, "end": 2016, "careerStart":2, "careerEnd":9},
+			{"team": "warriors", "start": 2017, "end": 2018, "careerStart":10, "careerEnd":11}
 		],
 		"totals": {
 			"MVP": "1",
-			"AN": "3",
+			"AN": "7",
 			"AD": "0",
-			"AS": "3"
+			"AS": "7"
 		},
-		"championships": []
+		"championships": [2017]
 	}
 ]

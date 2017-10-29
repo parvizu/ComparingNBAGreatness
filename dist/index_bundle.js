@@ -69,9 +69,35 @@
 	var ReactDOM = __webpack_require__(34);
 
 	var PlayerViz = __webpack_require__(169);
-	__webpack_require__(383);
 
-	ReactDOM.render(React.createElement(PlayerViz, null), document.body);
+	var data = __webpack_require__(311);
+	var playersImages = {};
+	data.sort(function (a, b) {
+	  var p1 = a.name.split(' ')[1],
+	      p2 = b.name.split(' ')[1];
+
+	  if (p1 === "'Magic'") p1 = "Johnson";
+	  if (p2 === "'Magic'") p2 = "Johnson";
+
+	  if (p1 < p2) return -1;
+	  if (p1 > p2) return 1;
+	  return 0;
+	});
+
+	// Preloading all player images to avoid having to load them each time.
+	data.forEach(function (playerData) {
+	  var playerPics = [];
+	  playerData.pics.forEach(function (pic) {
+	    var route = './img/' + pic;
+	    playerPics.push(__webpack_require__(312)(route));
+	  });
+
+	  playersImages[playerData.nickname] = playerPics;
+	});
+
+	__webpack_require__(317);
+
+	ReactDOM.render(React.createElement(PlayerViz, { data: data, images: playersImages }), document.body);
 
 /***/ },
 /* 2 */
@@ -180,14 +206,103 @@
 /***/ function(module, exports) {
 
 	// shim for using process in browser
-
 	var process = module.exports = {};
+
+	// cached from whatever global is present so that test runners that stub it
+	// don't break things.  But we need to wrap it in a try catch in case it is
+	// wrapped in strict mode code which doesn't define any globals.  It's inside a
+	// function because try/catches deoptimize in certain engines.
+
+	var cachedSetTimeout;
+	var cachedClearTimeout;
+
+	function defaultSetTimout() {
+	    throw new Error('setTimeout has not been defined');
+	}
+	function defaultClearTimeout () {
+	    throw new Error('clearTimeout has not been defined');
+	}
+	(function () {
+	    try {
+	        if (typeof setTimeout === 'function') {
+	            cachedSetTimeout = setTimeout;
+	        } else {
+	            cachedSetTimeout = defaultSetTimout;
+	        }
+	    } catch (e) {
+	        cachedSetTimeout = defaultSetTimout;
+	    }
+	    try {
+	        if (typeof clearTimeout === 'function') {
+	            cachedClearTimeout = clearTimeout;
+	        } else {
+	            cachedClearTimeout = defaultClearTimeout;
+	        }
+	    } catch (e) {
+	        cachedClearTimeout = defaultClearTimeout;
+	    }
+	} ())
+	function runTimeout(fun) {
+	    if (cachedSetTimeout === setTimeout) {
+	        //normal enviroments in sane situations
+	        return setTimeout(fun, 0);
+	    }
+	    // if setTimeout wasn't available but was latter defined
+	    if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
+	        cachedSetTimeout = setTimeout;
+	        return setTimeout(fun, 0);
+	    }
+	    try {
+	        // when when somebody has screwed with setTimeout but no I.E. maddness
+	        return cachedSetTimeout(fun, 0);
+	    } catch(e){
+	        try {
+	            // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
+	            return cachedSetTimeout.call(null, fun, 0);
+	        } catch(e){
+	            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
+	            return cachedSetTimeout.call(this, fun, 0);
+	        }
+	    }
+
+
+	}
+	function runClearTimeout(marker) {
+	    if (cachedClearTimeout === clearTimeout) {
+	        //normal enviroments in sane situations
+	        return clearTimeout(marker);
+	    }
+	    // if clearTimeout wasn't available but was latter defined
+	    if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
+	        cachedClearTimeout = clearTimeout;
+	        return clearTimeout(marker);
+	    }
+	    try {
+	        // when when somebody has screwed with setTimeout but no I.E. maddness
+	        return cachedClearTimeout(marker);
+	    } catch (e){
+	        try {
+	            // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
+	            return cachedClearTimeout.call(null, marker);
+	        } catch (e){
+	            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
+	            // Some versions of I.E. have different rules for clearTimeout vs setTimeout
+	            return cachedClearTimeout.call(this, marker);
+	        }
+	    }
+
+
+
+	}
 	var queue = [];
 	var draining = false;
 	var currentQueue;
 	var queueIndex = -1;
 
 	function cleanUpNextTick() {
+	    if (!draining || !currentQueue) {
+	        return;
+	    }
 	    draining = false;
 	    if (currentQueue.length) {
 	        queue = currentQueue.concat(queue);
@@ -203,7 +318,7 @@
 	    if (draining) {
 	        return;
 	    }
-	    var timeout = setTimeout(cleanUpNextTick);
+	    var timeout = runTimeout(cleanUpNextTick);
 	    draining = true;
 
 	    var len = queue.length;
@@ -220,7 +335,7 @@
 	    }
 	    currentQueue = null;
 	    draining = false;
-	    clearTimeout(timeout);
+	    runClearTimeout(timeout);
 	}
 
 	process.nextTick = function (fun) {
@@ -232,7 +347,7 @@
 	    }
 	    queue.push(new Item(fun, args));
 	    if (queue.length === 1 && !draining) {
-	        setTimeout(drainQueue, 0);
+	        runTimeout(drainQueue);
 	    }
 	};
 
@@ -20167,28 +20282,14 @@
 
 	var React = __webpack_require__(2),
 	    ReactDOM = __webpack_require__(34),
-	    Visualization = __webpack_require__(170),
-	    data = __webpack_require__(338);
-	html2canvas = __webpack_require__(384);
-
-	data.sort(function (a, b) {
-		var p1 = a.name.split(' ')[1],
-		    p2 = b.name.split(' ')[1];
-
-		if (p1 === "'Magic'") p1 = "Johnson";
-		if (p2 === "'Magic'") p2 = "Johnson";
-
-		if (p1 < p2) return -1;
-		if (p1 > p2) return 1;
-		return 0;
-	});
+	    Visualization = __webpack_require__(170);
 
 	var Player = React.createClass({
 		displayName: 'Player',
 
 		getInitialState: function () {
 			return {
-				'selected': ''
+				'selected': this.props.isSelected
 			};
 		},
 
@@ -20210,7 +20311,7 @@
 
 		render: function () {
 			// if (this.props.player.nickname === 'kobe')
-			var img = __webpack_require__(385)("./" + this.props.player.nickname + 'jerseylarge.png');
+			var img = __webpack_require__(310)("./" + this.props.player.nickname + 'jerseysmallX.png');
 			// else
 			// 	var img = require('./img/'+this.props.player.nickname+'jersey.png');
 			// 	var img = require('./img/kobejersey.png');
@@ -20229,8 +20330,9 @@
 
 		render: function () {
 			var self = this;
-			var players = this.props.data.map(function (player) {
-				return React.createElement(Player, { player: player, onPlayerSelect: self.props.onPlayerSelect });
+			var players = self.props.data.map(function (player) {
+				var isSelected = self.props.selectedPlayers.indexOf(player.nickname) !== -1 ? 'selected' : '';
+				return React.createElement(Player, { key: player.nickname + "-key", player: player, onPlayerSelect: self.props.onPlayerSelect, isSelected: isSelected });
 			});
 
 			return React.createElement(
@@ -20268,7 +20370,6 @@
 		},
 
 		render: function () {
-			var helpIcon = __webpack_require__(232);
 			return React.createElement(
 				'div',
 				{ id: 'menu' },
@@ -20286,11 +20387,6 @@
 					'div',
 					{ className: this.state.age, onClick: this.onSelectMode, value: 'age' },
 					' By Player\'s Age '
-				),
-				React.createElement(
-					'div',
-					{ id: 'helpArea' },
-					React.createElement('img', { id: 'help', src: helpIcon })
 				)
 			);
 		}
@@ -20301,114 +20397,124 @@
 
 
 		render: function () {
+			var helpIcon = __webpack_require__(225);
 			return React.createElement(
 				'div',
 				{ id: 'vizLegend' },
 				React.createElement(
 					'div',
-					{ className: 'legendScale' },
+					{ id: 'legendSection' },
 					React.createElement(
-						'h5',
-						{ className: 'selectionType' },
-						'Most Valuable Player'
+						'div',
+						{ className: 'legendScale' },
+						React.createElement(
+							'h5',
+							{ className: 'selectionType' },
+							'Most Valuable Player'
+						)
+					),
+					React.createElement(
+						'div',
+						{ className: 'legendScale' },
+						React.createElement(
+							'h5',
+							null,
+							' '
+						),
+						React.createElement('div', { className: 'mvp firstteam' })
+					),
+					React.createElement(
+						'div',
+						{ className: 'legendScale' },
+						React.createElement(
+							'h5',
+							{ className: 'selectionType' },
+							'All NBA Team'
+						)
+					),
+					React.createElement(
+						'div',
+						{ className: 'legendScale' },
+						React.createElement(
+							'h5',
+							null,
+							'1st'
+						),
+						React.createElement('div', { className: 'allnba firstteam' })
+					),
+					React.createElement(
+						'div',
+						{ className: 'legendScale' },
+						React.createElement(
+							'h5',
+							null,
+							'2nd'
+						),
+						React.createElement('div', { className: 'allnba secondteam' })
+					),
+					React.createElement(
+						'div',
+						{ className: 'legendScale' },
+						React.createElement(
+							'h5',
+							null,
+							'3rd'
+						),
+						React.createElement('div', { className: 'allnba thirdteam' })
+					),
+					React.createElement(
+						'div',
+						{ className: 'legendScale' },
+						React.createElement(
+							'h5',
+							{ className: 'selectionType' },
+							'All Defensive Team'
+						)
+					),
+					React.createElement(
+						'div',
+						{ className: 'legendScale' },
+						React.createElement(
+							'h5',
+							null,
+							'1st'
+						),
+						React.createElement('div', { className: 'alldefensive firstteam' })
+					),
+					React.createElement(
+						'div',
+						{ className: 'legendScale' },
+						React.createElement(
+							'h5',
+							null,
+							'2nd'
+						),
+						React.createElement('div', { className: 'alldefensive secondteam' })
+					),
+					React.createElement(
+						'div',
+						{ className: 'legendScale' },
+						React.createElement(
+							'h5',
+							{ className: 'selectionType' },
+							'All Star'
+						)
+					),
+					React.createElement(
+						'div',
+						{ className: 'legendScale' },
+						React.createElement(
+							'h5',
+							null,
+							' '
+						),
+						React.createElement('div', { className: 'allstar firstteam' })
 					)
 				),
 				React.createElement(
 					'div',
-					{ className: 'legendScale' },
-					React.createElement(
-						'h5',
-						null,
-						' '
-					),
-					React.createElement('div', { className: 'mvp firstteam' })
-				),
-				React.createElement(
-					'div',
-					{ className: 'legendScale' },
-					React.createElement(
-						'h5',
-						{ className: 'selectionType' },
-						'All NBA Team'
-					)
-				),
-				React.createElement(
-					'div',
-					{ className: 'legendScale' },
-					React.createElement(
-						'h5',
-						null,
-						'1st'
-					),
-					React.createElement('div', { className: 'allnba firstteam' })
-				),
-				React.createElement(
-					'div',
-					{ className: 'legendScale' },
-					React.createElement(
-						'h5',
-						null,
-						'2nd'
-					),
-					React.createElement('div', { className: 'allnba secondteam' })
-				),
-				React.createElement(
-					'div',
-					{ className: 'legendScale' },
-					React.createElement(
-						'h5',
-						null,
-						'3rd'
-					),
-					React.createElement('div', { className: 'allnba thirdteam' })
-				),
-				React.createElement(
-					'div',
-					{ className: 'legendScale' },
-					React.createElement(
-						'h5',
-						{ className: 'selectionType' },
-						'All Defensive Team'
-					)
-				),
-				React.createElement(
-					'div',
-					{ className: 'legendScale' },
-					React.createElement(
-						'h5',
-						null,
-						'1st'
-					),
-					React.createElement('div', { className: 'alldefensive firstteam' })
-				),
-				React.createElement(
-					'div',
-					{ className: 'legendScale' },
-					React.createElement(
-						'h5',
-						null,
-						'2nd'
-					),
-					React.createElement('div', { className: 'alldefensive secondteam' })
-				),
-				React.createElement(
-					'div',
-					{ className: 'legendScale' },
-					React.createElement(
-						'h5',
-						{ className: 'selectionType' },
-						'All Star'
-					)
-				),
-				React.createElement(
-					'div',
-					{ className: 'legendScale' },
-					React.createElement(
-						'h5',
-						null,
-						' '
-					),
-					React.createElement('div', { className: 'allstar firstteam' })
+					{ id: 'helpArea' },
+					React.createElement('img', { id: 'help', src: helpIcon })
 				)
 			);
 		}
@@ -20419,10 +20525,13 @@
 		displayName: 'PlayerViz',
 
 		getInitialState: function () {
+			var defaultSelectedPlayers = ['jordan', 'lebron', 'kobe'];
+			var defaultTimeSpan = this.getTimeSpan(defaultSelectedPlayers);
+
 			return {
-				"selected": [],
+				"selected": defaultSelectedPlayers,
 				"vizMode": 'career',
-				"timespan": {},
+				"timespan": defaultTimeSpan,
 				"popup": "hide",
 				"img": ""
 			};
@@ -20434,7 +20543,7 @@
 			});
 		},
 
-		setTimeSpan: function () {
+		getTimeSpan: function (selectedPlayers) {
 			var start = 2017,
 			    end = 1,
 			    years = [],
@@ -20446,9 +20555,9 @@
 			    careerYears = 0,
 			    players = [];
 
-			for (var j = 0; j < data.length; j++) {
-				if (this.state.selected.indexOf(data[j].nickname) !== -1) {
-					players.push(data[j]);
+			for (var j = 0; j < this.props.data.length; j++) {
+				if (selectedPlayers.indexOf(this.props.data[j].nickname) !== -1) {
+					players.push(this.props.data[j]);
 				}
 			}
 
@@ -20477,17 +20586,15 @@
 				}
 			}
 
-			this.setState({
-				timespan: {
-					"start": start,
-					"end": end,
-					"years": careerYears,
-					"age": {
-						"first": startAge,
-						"last": endAge
-					}
+			return {
+				"start": start,
+				"end": end,
+				"years": careerYears,
+				"age": {
+					"first": startAge,
+					"last": endAge
 				}
-			});
+			};
 		},
 
 		handlePlayerSelect: function (e) {
@@ -20498,29 +20605,33 @@
 				this.state.selected.splice(position, 1);
 			}
 
-			this.setState({ selected: this.state.selected });
-			this.setTimeSpan();
-		},
+			var newTimeSpan = this.getTimeSpan(this.state.selected);
 
-		createImage: function (e) {
-			var self = this;
-
-			e.preventDefault();
-
-			html2canvas(document.getElementById('app'), {
-				allowTaint: true,
-				onrendered: function (canvas) {
-					console.log(canvas);
-					var png = canvas.toDataURL("image/png");
-					// document.getElementById('popup').append('<img src="'+img+'" ">');
-
-					self.setState({
-						"popup": "",
-						"img": png
-					});
-				}
+			this.setState({
+				selected: this.state.selected,
+				timespan: newTimeSpan
 			});
 		},
+
+		// createImage: function(e) {
+		// 	var self = this;
+
+		// 	e.preventDefault();
+
+		// 	html2canvas(document.getElementById('app'), {
+		// 		allowTaint: true,
+		// 		onrendered: function(canvas) {
+		// 			console.log(canvas);
+		// 			var png = canvas.toDataURL("image/png");
+		// 			// document.getElementById('popup').append('<img src="'+img+'" ">');
+
+		// 			self.setState({
+		// 				"popup": "",
+		// 				"img" : png
+		// 			});
+		// 		}
+		// 	});
+		// },
 
 		closeImage: function () {
 			this.setState({
@@ -20529,9 +20640,9 @@
 		},
 
 		render: function () {
-			var nbaLogo = __webpack_require__(287),
+			var nbaLogo = __webpack_require__(270),
 			    instructions = this.state.selected.length != 0 ? 'hide' : '',
-			    twitterLink = __webpack_require__(323);
+			    twitterLink = __webpack_require__(299);
 
 			return React.createElement(
 				'div',
@@ -20539,6 +20650,11 @@
 				React.createElement(
 					'div',
 					{ id: 'header' },
+					React.createElement(
+						'div',
+						{ id: 'updated' },
+						'v1.3 (10/29/17)'
+					),
 					React.createElement('img', { src: nbaLogo }),
 					React.createElement(
 						'h1',
@@ -20568,10 +20684,10 @@
 						'Not all Basketball players are the same. Only a few of them have the drive and talent to rise to heights never seen before. Those we call the \'Great Ones\'. But the path to greatness was different for each one. Some peaked very early, some took time to find their groove, others redefined the words longevity and success, while some were otherworldly throughout. Explore how some of the best players in NBA history stack up against each other. See how their careers unfolded by looking at when the awards and titles were won, and how maturity and experience played a part in their success. Get a chance to compare the greatest this game has ever seen, whether they be past or rising stars.'
 					)
 				),
-				React.createElement(PlayerList, { data: data, onPlayerSelect: this.handlePlayerSelect }),
-				React.createElement(VisualizationLegend, null),
+				React.createElement(PlayerList, { data: this.props.data, onPlayerSelect: this.handlePlayerSelect, selectedPlayers: this.state.selected }),
 				React.createElement(Menu, { changeViewMode: this.changeViewMode }),
-				React.createElement(Visualization, { players: this.state.selected, data: data, mode: this.state.vizMode, timespan: this.state.timespan }),
+				React.createElement(VisualizationLegend, null),
+				React.createElement(Visualization, { players: this.state.selected, data: this.props.data, mode: this.state.vizMode, timespan: this.state.timespan, images: this.props.images }),
 				React.createElement(
 					'div',
 					{ className: instructions, id: 'instructions' },
@@ -20598,7 +20714,7 @@
 					'  ',
 					React.createElement(
 						'a',
-						{ href: 'http://www.parvizu.com', target: '_blank' },
+						{ className: 'footer-link', href: 'http://www.parvizu.com', target: '_blank' },
 						'www.parvizu.com'
 					),
 					'  ',
@@ -20610,7 +20726,7 @@
 					'  ',
 					React.createElement(
 						'a',
-						{ href: 'http://www.morethanjustsports.com', target: '_blank' },
+						{ className: 'footer-link', href: 'http://www.morethanjustsports.com', target: '_blank' },
 						'www.morethanjustsports.com'
 					),
 					'   ',
@@ -20910,7 +21026,7 @@
 			return React.createElement(
 				'div',
 				{ className: 'individualPlayerViz' },
-				React.createElement(PlayerProfile, { player: this.props.playerData.name, nickname: this.props.playerData.nickname, pics: this.props.playerData.pics }),
+				React.createElement(PlayerProfile, { player: this.props.playerData.name, nickname: this.props.playerData.nickname, pics: this.props.playerData.pics, images: this.props.images }),
 				React.createElement(
 					'div',
 					{ className: 'individualPlayerVizInfo' },
@@ -21183,10 +21299,11 @@
 		displayName: 'PlayerProfile',
 
 		getRandomPic: function () {
-			var position = Math.floor(Math.random() * this.props.pics.length) + 1;
-			var imgName = './img/' + this.props.nickname + 'trans' + position + '.png';
-			var src = __webpack_require__(337)(imgName);
-			return src;
+			var position = Math.floor(Math.random() * this.props.pics.length);
+			// var imgName = './img/'+this.props.nickname+'trans'+(position)+'.png';
+			// var src = require(imgName);
+			// return src;
+			return this.props.images[this.props.nickname][position];
 		},
 
 		render: function () {
@@ -21244,7 +21361,7 @@
 
 			var playersCharts = this.props.players.map(function (player) {
 				var playerData = self.getPlayerData(player);
-				return React.createElement(PlayerVisualization, { playerData: playerData, mode: self.props.mode, key: player, timespan: timespan });
+				return React.createElement(PlayerVisualization, { playerData: playerData, mode: self.props.mode, key: player, timespan: timespan, images: self.props.images });
 			});
 
 			return React.createElement(
@@ -33708,155 +33825,128 @@
 
 	var map = {
 		"./76ers.png": 188,
-		"./birdjersey.png": 189,
-		"./birdjerseylarge.png": 190,
-		"./birdtrans1.png": 191,
-		"./birdtrans2.png": 192,
-		"./birdtrans3.png": 193,
-		"./bucks.png": 194,
-		"./bulls.png": 195,
-		"./cavaliers.png": 196,
-		"./celtics.png": 197,
-		"./dirkjersey.png": 198,
-		"./dirkjerseylarge.png": 199,
-		"./dirktrans1.png": 200,
-		"./dirktrans2.png": 201,
-		"./dirktrans3.png": 202,
-		"./duncanjersey.png": 203,
-		"./duncanjerseylarge.png": 204,
-		"./duncantrans1.png": 205,
-		"./duncantrans2.png": 206,
-		"./duncantrans3.png": 207,
-		"./durantjersey.png": 208,
-		"./durantjerseylarge.png": 209,
-		"./duranttrans1.png": 210,
-		"./duranttrans2.png": 211,
-		"./duranttrans3.png": 212,
-		"./dwadejersey.png": 213,
-		"./dwadejerseylarge.png": 214,
-		"./dwadetrans1.png": 215,
-		"./dwadetrans2.png": 216,
-		"./dwadetrans3.png": 217,
-		"./elginjersey.png": 218,
-		"./elginjerseylarge.png": 219,
-		"./elgintrans1.png": 220,
-		"./elgintrans2.png": 221,
-		"./elgintrans3.png": 222,
-		"./hakeemjersey.png": 223,
-		"./hakeemjerseylarge.png": 224,
-		"./hakeemtrans1.png": 225,
-		"./hakeemtrans2.png": 226,
-		"./hakeemtrans3.png": 227,
-		"./hawks.png": 228,
-		"./heat.png": 229,
-		"./helpIconGhostwhite.png": 230,
-		"./helpIconOrange.png": 231,
-		"./helpIconWhite.png": 232,
-		"./infoIcon.png": 233,
-		"./jazz.png": 234,
-		"./jordanjersey.png": 235,
-		"./jordanjerseylarge.png": 236,
-		"./jordantrans1.png": 237,
-		"./jordantrans2.png": 238,
-		"./jordantrans3.png": 239,
-		"./jordantrans5.png": 240,
-		"./jordantrans6.png": 241,
-		"./jordantrans7.png": 242,
-		"./kareemjersey.png": 243,
-		"./kareemjerseylarge.png": 244,
-		"./kareemtrans1.png": 245,
-		"./kareemtrans2.png": 246,
-		"./kareemtrans3.png": 247,
-		"./kgjersey.png": 248,
-		"./kgjerseylarge.png": 249,
-		"./kgtrans1.png": 250,
-		"./kgtrans2.png": 251,
-		"./kgtrans3.png": 252,
-		"./kobejersey.png": 253,
-		"./kobejerseylarge.png": 254,
-		"./kobetrans1.png": 255,
-		"./kobetrans2.png": 256,
-		"./kobetrans3.png": 257,
-		"./lakers.png": 258,
-		"./lebronjersey.png": 259,
-		"./lebronjerseylarge.png": 260,
-		"./lebrontrans1.png": 261,
-		"./lebrontrans2.png": 262,
-		"./lebrontrans3.png": 263,
-		"./lebrontrans4.png": 264,
-		"./lebrontrans6.png": 265,
-		"./magic.png": 266,
-		"./magicjersey.png": 267,
-		"./magicjerseylarge.png": 268,
-		"./magictrans1.png": 269,
-		"./magictrans2.png": 270,
-		"./mailmanjersey.png": 271,
-		"./mailmanjerseylarge.png": 272,
-		"./mailmantrans1.png": 273,
-		"./mailmantrans2.png": 274,
-		"./mailmantrans3.png": 275,
-		"./mavericks.png": 276,
-		"./mosesjersey.png": 277,
-		"./mosesjerseylarge.png": 278,
-		"./mosestrans1.png": 279,
-		"./mosestrans2.png": 280,
-		"./mosestrans3.png": 281,
-		"./nashjersey.png": 282,
-		"./nashjerseylarge.png": 283,
-		"./nashtrans1.png": 284,
-		"./nashtrans2.png": 285,
-		"./nashtrans3.png": 286,
-		"./nbaLogo.png": 287,
+		"./birdjerseysmallX.png": 189,
+		"./birdtrans1.png": 190,
+		"./birdtrans2.png": 191,
+		"./birdtrans3.png": 192,
+		"./bucks.png": 193,
+		"./bulls.png": 194,
+		"./cavaliers.png": 195,
+		"./celtics.png": 196,
+		"./dirkjerseysmallX.png": 197,
+		"./dirktrans1.png": 198,
+		"./dirktrans2.png": 199,
+		"./dirktrans3.png": 200,
+		"./duncanjerseysmallX.png": 201,
+		"./duncantrans1.png": 202,
+		"./duncantrans2.png": 203,
+		"./duncantrans3.png": 204,
+		"./durantjerseysmallX.png": 205,
+		"./duranttrans1.png": 206,
+		"./duranttrans2.png": 207,
+		"./duranttrans3.png": 208,
+		"./dwadejerseysmallX.png": 209,
+		"./dwadetrans1.png": 210,
+		"./dwadetrans2.png": 211,
+		"./dwadetrans3.png": 212,
+		"./elginjerseysmallX.png": 213,
+		"./elgintrans1.png": 214,
+		"./elgintrans2.png": 215,
+		"./elgintrans3.png": 216,
+		"./hakeemjerseysmallX.png": 217,
+		"./hakeemtrans1.png": 218,
+		"./hakeemtrans2.png": 219,
+		"./hakeemtrans3.png": 220,
+		"./hawks.png": 221,
+		"./heat.png": 222,
+		"./helpIconGhostwhite.png": 223,
+		"./helpIconOrange.png": 224,
+		"./helpIconWhite.png": 225,
+		"./infoIcon.png": 226,
+		"./jazz.png": 227,
+		"./jordanjerseysmallX.png": 228,
+		"./jordantrans1.png": 229,
+		"./jordantrans2.png": 230,
+		"./jordantrans3.png": 231,
+		"./jordantrans5.png": 232,
+		"./jordantrans6.png": 233,
+		"./jordantrans7.png": 234,
+		"./kareemjerseysmallX.png": 235,
+		"./kareemtrans1.png": 236,
+		"./kareemtrans2.png": 237,
+		"./kareemtrans3.png": 238,
+		"./kawhijerseysmallX.png": 239,
+		"./kgjerseysmallX.png": 240,
+		"./kgtrans1.png": 241,
+		"./kgtrans2.png": 242,
+		"./kgtrans3.png": 243,
+		"./kobejerseysmallX.png": 244,
+		"./kobetrans1.png": 245,
+		"./kobetrans2.png": 246,
+		"./kobetrans3.png": 247,
+		"./lakers.png": 248,
+		"./lebronjerseysmallX.png": 249,
+		"./lebrontrans1.png": 250,
+		"./lebrontrans2.png": 251,
+		"./lebrontrans3.png": 252,
+		"./magic.png": 253,
+		"./magicjerseysmallX.png": 254,
+		"./magictrans1.png": 255,
+		"./magictrans2.png": 256,
+		"./mailmanjerseysmallX.png": 257,
+		"./mailmantrans1.png": 258,
+		"./mailmantrans2.png": 259,
+		"./mailmantrans3.png": 260,
+		"./mavericks.png": 261,
+		"./mosesjerseysmallX.png": 262,
+		"./mosestrans1.png": 263,
+		"./mosestrans2.png": 264,
+		"./mosestrans3.png": 265,
+		"./nashjerseysmallX.png": 266,
+		"./nashtrans1.png": 267,
+		"./nashtrans2.png": 268,
+		"./nashtrans3.png": 269,
+		"./nbaLogo.png": 270,
 		"./nbatrophy1.png": 186,
-		"./nbatrophy2.png": 288,
-		"./nets.png": 289,
-		"./oscarjersey.png": 290,
-		"./oscarjerseylarge.png": 291,
-		"./oscartrans1.png": 292,
-		"./oscartrans2.png": 293,
-		"./oscartrans3.png": 294,
-		"./oscartrans4.png": 295,
-		"./raptors.png": 296,
-		"./rockets.png": 297,
-		"./royals.png": 298,
-		"./russelljersey.png": 299,
-		"./russelljerseylarge.png": 300,
-		"./russelltrans1.png": 301,
-		"./russelltrans2.png": 302,
-		"./russelltrans3.png": 303,
-		"./shaqjersey.png": 304,
-		"./shaqjerseylarge.png": 305,
-		"./shaqtrans1.png": 306,
-		"./shaqtrans2.png": 307,
-		"./shaqtrans3.png": 308,
-		"./sonics.png": 309,
-		"./spurs.png": 310,
-		"./stephjersey.png": 311,
-		"./stephjerseylarge.png": 312,
-		"./stephtrans1.png": 313,
-		"./stephtrans2.png": 314,
-		"./stephtrans3.png": 315,
-		"./stephtrans7.png": 316,
-		"./stephtrans8.png": 317,
-		"./stephtrans9.png": 318,
-		"./suns.png": 319,
-		"./teamlogos.png": 320,
-		"./thunder.png": 321,
-		"./timberwolves.png": 322,
-		"./twitter-256.png": 323,
-		"./warriors.png": 324,
-		"./westjersey.png": 325,
-		"./westjerseylarge.png": 326,
-		"./westjerseylarge3.png": 327,
-		"./westtrans1.png": 328,
-		"./westtrans2.png": 329,
-		"./westtrans3.png": 330,
-		"./wiltjersey.png": 331,
-		"./wiltjerseylarge.png": 332,
-		"./wilttrans1.png": 333,
-		"./wilttrans2.png": 334,
-		"./wilttrans3.png": 335,
-		"./wizards.png": 336
+		"./nets.png": 271,
+		"./oscarjerseysmallX.png": 272,
+		"./oscartrans1.png": 273,
+		"./oscartrans2.png": 274,
+		"./oscartrans3.png": 275,
+		"./raptors.png": 276,
+		"./rockets.png": 277,
+		"./royals.png": 278,
+		"./russelljerseysmallX.png": 279,
+		"./russelltrans1.png": 280,
+		"./russelltrans2.png": 281,
+		"./russelltrans3.png": 282,
+		"./shaqjerseysmallX.png": 283,
+		"./shaqtrans1.png": 284,
+		"./shaqtrans2.png": 285,
+		"./shaqtrans3.png": 286,
+		"./sonics.png": 287,
+		"./spurs.png": 288,
+		"./stephjerseysmallX.png": 289,
+		"./stephtrans1.png": 290,
+		"./stephtrans2.png": 291,
+		"./stephtrans3.png": 292,
+		"./stephtrans7.png": 293,
+		"./stephtrans8.png": 294,
+		"./stephtrans9.png": 295,
+		"./suns.png": 296,
+		"./thunder.png": 297,
+		"./timberwolves.png": 298,
+		"./twitter-256.png": 299,
+		"./warriors.png": 300,
+		"./westjerseysmallX.png": 301,
+		"./westtrans1.png": 302,
+		"./westtrans2.png": 303,
+		"./westtrans3.png": 304,
+		"./wiltjerseysmallX.png": 305,
+		"./wilttrans1.png": 306,
+		"./wilttrans2.png": 307,
+		"./wilttrans3.png": 308,
+		"./wizards.png": 309
 	};
 	function webpackContext(req) {
 		return __webpack_require__(webpackContextResolve(req));
@@ -33882,1098 +33972,756 @@
 /* 189 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__.p + "434866c027b76a1416ff26992718c784.png";
+	module.exports = __webpack_require__.p + "6973ffbfd12a797a7c4c740b791da4ec.png";
 
 /***/ },
 /* 190 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__.p + "f7b88f278cdcf6df3af33210217fedae.png";
+	module.exports = __webpack_require__.p + "891367d04134d263c30f2b5b15f4db1f.png";
 
 /***/ },
 /* 191 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__.p + "891367d04134d263c30f2b5b15f4db1f.png";
+	module.exports = __webpack_require__.p + "e45f3af09aa5779b81f5201835fd61cf.png";
 
 /***/ },
 /* 192 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__.p + "e45f3af09aa5779b81f5201835fd61cf.png";
+	module.exports = __webpack_require__.p + "82826fac440377c594a70ac6942a97a4.png";
 
 /***/ },
 /* 193 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__.p + "2f571380274b8067971016f3d8ae661e.png";
+	module.exports = __webpack_require__.p + "86ec9f4651eccdd025415ac451e31f61.png";
 
 /***/ },
 /* 194 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__.p + "86ec9f4651eccdd025415ac451e31f61.png";
+	module.exports = __webpack_require__.p + "8baa1627783f45af5bea954da1f93455.png";
 
 /***/ },
 /* 195 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__.p + "8baa1627783f45af5bea954da1f93455.png";
+	module.exports = __webpack_require__.p + "3add1b2dc5d901b7d1f9ae058c80f5f4.png";
 
 /***/ },
 /* 196 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__.p + "3add1b2dc5d901b7d1f9ae058c80f5f4.png";
+	module.exports = __webpack_require__.p + "9265c5c60e3a2ae3a7cdd5ee21a3d5eb.png";
 
 /***/ },
 /* 197 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__.p + "9265c5c60e3a2ae3a7cdd5ee21a3d5eb.png";
+	module.exports = __webpack_require__.p + "ac493d5554f763b42f7a210a3e06ed1f.png";
 
 /***/ },
 /* 198 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__.p + "5bd78687bf68541a9678f1a86560d982.png";
+	module.exports = __webpack_require__.p + "867c07865adf433de8772e33f85e72d4.png";
 
 /***/ },
 /* 199 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__.p + "22ece039c7498cab69706424627d5952.png";
+	module.exports = __webpack_require__.p + "547258aa6887067f81d2ebd2109aa864.png";
 
 /***/ },
 /* 200 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__.p + "867c07865adf433de8772e33f85e72d4.png";
+	module.exports = __webpack_require__.p + "6a565805c75d4820d6ffd0b3f211e86d.png";
 
 /***/ },
 /* 201 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__.p + "4b14b9ab18814d9b2a95e534c6b1696d.png";
+	module.exports = __webpack_require__.p + "2d649ff2a3371b58970074a4b577b1f5.png";
 
 /***/ },
 /* 202 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__.p + "8d9f5537b0c19653b74a02c90e5e956d.png";
+	module.exports = __webpack_require__.p + "6eafabab45f9f3b826e1b1337ce5bbcf.png";
 
 /***/ },
 /* 203 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__.p + "a69abb192218c6d89ce861ddb38c224c.png";
+	module.exports = __webpack_require__.p + "f240409f83a5059f33768e8ac3d62b6a.png";
 
 /***/ },
 /* 204 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__.p + "8031133b5fe25991ba5aafc0aba7243c.png";
+	module.exports = __webpack_require__.p + "8719e00d03cf0fd315adc03ad3981a53.png";
 
 /***/ },
 /* 205 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__.p + "6eafabab45f9f3b826e1b1337ce5bbcf.png";
+	module.exports = __webpack_require__.p + "b60c79a7889cd9ead8839a2af15bf8db.png";
 
 /***/ },
 /* 206 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__.p + "f240409f83a5059f33768e8ac3d62b6a.png";
+	module.exports = __webpack_require__.p + "35f1c9c138212fcbe324408a8240226c.png";
 
 /***/ },
 /* 207 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__.p + "8719e00d03cf0fd315adc03ad3981a53.png";
+	module.exports = __webpack_require__.p + "449f506503443807e0b370c16d762c40.png";
 
 /***/ },
 /* 208 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__.p + "dc900ef1776a142ec8973e4ce81f296c.png";
+	module.exports = __webpack_require__.p + "3dd448dd35934b117ec500c0f4264bb9.png";
 
 /***/ },
 /* 209 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__.p + "db7f9142ba0511439173467d801aa23b.png";
+	module.exports = __webpack_require__.p + "8fc94bff9a2346bcbfb059d3c11bd884.png";
 
 /***/ },
 /* 210 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__.p + "596a14695fbb9b62ab30bfdf78750040.png";
+	module.exports = __webpack_require__.p + "762306919dea946ecb7f42169195c069.png";
 
 /***/ },
 /* 211 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__.p + "574c2234f52dbf7a41ebe8bc68b29c03.png";
+	module.exports = __webpack_require__.p + "b388c2d2b8895e0d11385e8dd0381860.png";
 
 /***/ },
 /* 212 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__.p + "b49e5e07105ea5333ef177457ae75fc5.png";
+	module.exports = __webpack_require__.p + "ddb486641ed32d73fd0bba140c078b8d.png";
 
 /***/ },
 /* 213 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__.p + "926fdba1e2805a8304c4a81770fdb8d4.png";
+	module.exports = __webpack_require__.p + "217487beb43d42ef86fb5c8376da003e.png";
 
 /***/ },
 /* 214 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__.p + "03b78cf4f15ecd1f28421f5447ab5158.png";
+	module.exports = __webpack_require__.p + "099d79872d22c49fbb3bec82dcfeafbb.png";
 
 /***/ },
 /* 215 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__.p + "9861ea4e7e4c7ed52023ae33aace0d3a.png";
+	module.exports = __webpack_require__.p + "e37a258eb4e9d88622a63cdc838d96fc.png";
 
 /***/ },
 /* 216 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__.p + "72e9b055cc98a76b8528da1642bff450.png";
+	module.exports = __webpack_require__.p + "01abff37f3ecc5cb0bf66d02a4ad8bcf.png";
 
 /***/ },
 /* 217 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__.p + "786660b4ac6f5ad6ea64347b65777583.png";
+	module.exports = __webpack_require__.p + "45b878fd9dcc61b22f9bf36d75d8fe52.png";
 
 /***/ },
 /* 218 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__.p + "5e469e1147381b59426e5bec25a4a8b5.png";
+	module.exports = __webpack_require__.p + "49d0f82b9b61a4b96509082573810a67.png";
 
 /***/ },
 /* 219 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__.p + "dc15dc1a50dfe862c08672c2199a48c7.png";
+	module.exports = __webpack_require__.p + "1a3afc3fa87509e41e63e51c88bd98b4.png";
 
 /***/ },
 /* 220 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__.p + "099d79872d22c49fbb3bec82dcfeafbb.png";
+	module.exports = __webpack_require__.p + "0e6c378c99bd03de82a86776fb2ad83c.png";
 
 /***/ },
 /* 221 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__.p + "e37a258eb4e9d88622a63cdc838d96fc.png";
+	module.exports = __webpack_require__.p + "475da3570f3a7c434404169e686bdd2c.png";
 
 /***/ },
 /* 222 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__.p + "01abff37f3ecc5cb0bf66d02a4ad8bcf.png";
-
-/***/ },
-/* 223 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__.p + "31394de121042af2afbe97901177be58.png";
-
-/***/ },
-/* 224 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__.p + "0c9e9c0a5527524279f5951276b84e39.png";
-
-/***/ },
-/* 225 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__.p + "49d0f82b9b61a4b96509082573810a67.png";
-
-/***/ },
-/* 226 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__.p + "1a3afc3fa87509e41e63e51c88bd98b4.png";
-
-/***/ },
-/* 227 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__.p + "0e6c378c99bd03de82a86776fb2ad83c.png";
-
-/***/ },
-/* 228 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__.p + "475da3570f3a7c434404169e686bdd2c.png";
-
-/***/ },
-/* 229 */
-/***/ function(module, exports, __webpack_require__) {
-
 	module.exports = __webpack_require__.p + "02a4e6a0370b102c09ca8ab1584e4aa4.png";
 
 /***/ },
-/* 230 */
+/* 223 */
 /***/ function(module, exports) {
 
 	module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAABVlBMVEX////////4+P/4+P/4+P/39//4+P/4+P/4+P/z8//39//4+P/4+P/////4+P/4+P/4+P/4+P/////5+f/4+P/4+P/4+P/29v/4+P/6+v/4+P/5+f/39//5+f/4+P/39//5+f/4+P/5+f/5+f/5+f/39//y8v/4+P/5+f/5+f/5+f/4+P/6+v/4+P/09P/09P/4+P/29v/4+P/39//39//4+P/////39//29v/4+P/5+f/4+P/////4+P/4+P/4+P/5+f/39//////////4+P/29v/39//4+P/4+P/5+f/4+P/4+P/5+f/39//4+P/////39//4+P/////4+P/19f/5+f/4+P/4+P/////4+P/5+f/5+f/39//5+f/////5+f/////5+f/4+P/4+P/4+P/4+P/5+f/39//////39//4+P/4+P/4+P/4+P/4+P/4+P/4+P8AAABYvDN3AAAAcHRSTlMAC01wiqS+2PIVYrL3BmnD/cIBWt5Gzhu7NeZYgaPjpqLoeip/qRP+VOxW9TLZFxj8OLOHQNMEyjvNV+IQ5N2UoWUKCUk5Y62YW2r6oIXVAx7SEbEZUOcjD+8uyDxRDp0NxvO6nGhP7QxB8Ija0LnfqWWFiAAAAAFiS0dEca8HXOIAAAAJcEhZcwAADdcAAA3XAUIom3gAAAAHdElNRQfgBQwFFyEXh9fJAAACwElEQVRYw6VX6V8aMRANLCygHMviiRZRUUBQcEVRVNRWqdXe933b2zb//6dCZsVlcmz8+b4x896QnUkmE0IkCASNUNiMRKMRMxwyggFyJcSGhuN0APHhoZiuOpFMWVQAK51MaMjtzAiVYiRj++lHx6gSY6NK+fgE9cXEuFw/mfXXU5qdlOmn4jr6bkWmxNmb1pP3MC3IpX1DQMylZ2bSOYEjz0fg/392bh5c83OznLPAfT9HWVi89C4uYG+xhPKP81deGiQslRGhUh2oP67f8gpe4soyzk/N48X7p77KZ3m1jkiOZ//iL1wT1XkNsxr9CuL9v+6eug3DyWYdYwN+JdYRrXlRywwOvemWbwt+brnl3MS8lhsZn99tsO/sXhh2d8CyjYhtWGkSB94D+v6lZR8se5iZZOYUNh8w801P1uu3mOkAM1M9a8zC5kPGPvKajpjpEDOtXp/sYCu9fdyD6TXdEWeRdrpWh2oA9u0JZ+9upoBOFzmFdN/lHPEACeos4B5U4T7vCRJDQ28+YPqHFu8ySMhf/+gxLOCJwBciYV99+ynon4mcYWL66Z+/AP1LUW+kJon46F+9dvVvhO4Iiar18bdKPY36BLDegf69RN8NoP6ED6D/+ElGiKiT+BkKYH+RMkx1Gb/CAs7kjLB6I32D1vhdzgipt/IPFuCngmEoD9Mv+ILfCkpQeZz/QABFmrrHWdVQziHAXznDEba0PnJnDP/kjI6wqeqDNVW+resjJb5Y9JEUX23acK82/nLVRUt2vWuif73zA4YLdx+cS9z9AYMfcbQCeEYcfsjSCDAwZPFjnm+AwTFPNGiqA+BBUzTqKgNwoy6x8zyrzAaF4zLvyYvG9UKRaqJYED+dShU9faVEJKjmdPS5KpGipjHvODWiQqOpljcbxAd2qy2Xt1u+D09y7acvw/Ue3wDd5/9/r2y0tiG5d8wAAAAldEVYdGRhdGU6Y3JlYXRlADIwMTYtMDUtMTJUMDU6MjM6MzMrMDI6MDCNHgLxAAAAJXRFWHRkYXRlOm1vZGlmeQAyMDE2LTA1LTEyVDA1OjIzOjMzKzAyOjAw/EO6TQAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAAASUVORK5CYII="
 
 /***/ },
-/* 231 */
+/* 224 */
 /***/ function(module, exports) {
 
 	module.exports = "data:image/png;base64,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"
 
 /***/ },
-/* 232 */
+/* 225 */
 /***/ function(module, exports) {
 
 	module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAQAAAAAYLlVAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAAmJLR0QAAKqNIzIAAAAJcEhZcwAADdcAAA3XAUIom3gAAAAHdElNRQfgBQwFFg08RIprAAAEBUlEQVRo3sWZT2hcVRTGf28aQjVoi2FoyBShBop2oy3E1lahhJpsJBEMTQhKtTVoXXUdxBBBunBVuu5ChWJAoWTc1NYoRqKkJBTiIl1MhGacDqZiDZ2mxGQ+F83M3DeZzL3vT5rvbe55c893vnvfvee+Oc8TAdFEB220li/Ila8M4xQC8sn9Suq0xrSseljWmE4r6c7q1q1RZzWhNbliTT/rrBrjEeBpQPPOoU3Ma0BeVAGdmgkVvIQZdYYXkNK1SMFLuKZUGAHtysUSXpJyag8qoN+y2oNiWf3uAjyNxBq8hJFaS9LbkIg8vuRtpxSS5Q+ywF72sdfJ4ytOUR1wgyaX0ec1pAM+rwMaUt7Bc9j2CPodSEbVXPN5NmvU6ltUbz0B7dald1cn6+7rk7prYSjo0GYCUtaNd0t7rJlzj25ZWBbUUluALe2s6og1PEJHtGphStcS0Gl9fuedwiN03sp1vFqAZ835s1WnW4POKa2cckrrnBp8vzVq1sI2VcoJJZcBq+ZjVdtu2vfrdNW2PGbl6zMFNFoP3Ns++t3KbuiR1W5fn9sWxsyjGU0AcIZ9lhw25rMukNrQI8WFOh4b8RxnKplwwjphg8bYntxkla/qCaPXoJVzojQDSY465P0KXmRHzT47eGkTj9o4ShIagO71B1EP79NTbu+vM62/lttLVs4E3VxCKG2dLFeYSfYjh/5pkaCJE1atbviP3w3rZQePEzQl6GBnTAI+Z8Ww2h08dtKRoC2m8D/yiWE9y/NOXm0JWmMJP8tbrBn2RYeFDdAaj4B5uvjHsN+k29EzFgF5Orlj2Lu46Owbg4B7dJHxhb/q+IoK0IqWIu38Zb3qO4J26bdA/ktuS2UzFBngF8N+mqscDsihuQjjv+Qb/VOaDMwwlyAXevz3+diwPL7llcAcuSgCRn1r/wNeD8ERSUDaaDfwWSiOSAJ+MNqv8UxYAZlQjvAv9w2rKyRLJsE4D0O5/uWz3FOPiYeMJyhwPZTzA5+VDMVxnUIDcIU3Qjg386Fh7Q/BAFfAEyTJOx6e8aJIC4sJYJHJbQgPkyyyPvLL2yLgMrBeI2pkzvrfKG7M8wIrpRlY8WX1x4OhR6+wpSqZxzQHH2P4Gxxer5cFKFD4cdN3FN8M6F0uUFS23/chE1IYfMdPpaa5/9/1Ha9bhyyDFcMU8Cc9Ic+FIHhAD/naAuAG721xeHGKGfNGdQr+mk+3VMAI3/hv1CpWf8E7DlR/+6h6aXbwcSpWI0/DKkZ4V66NooZrles3KzX2qhBr+EJ1kdomAB3SQmzhF/wFajcBqCWm4k3aLE4HEYDQcU1FCj5VSbrhBCBPfcqECp5RX/QPl6VS7jZ+uq1cW/Lx2tvuz/f/A5/6T+OYs1unAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDE2LTA1LTEyVDA1OjIyOjEzKzAyOjAwIPlusgAAACV0RVh0ZGF0ZTptb2RpZnkAMjAxNi0wNS0xMlQwNToyMjoxMyswMjowMFGk1g4AAAAZdEVYdFNvZnR3YXJlAHd3dy5pbmtzY2FwZS5vcmeb7jwaAAAAAElFTkSuQmCC"
 
 /***/ },
-/* 233 */
+/* 226 */
 /***/ function(module, exports) {
 
 	module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAABAlBMVEX/////iwD/iwD/iwD/jAD/jAD/jAD/jAD/jAD/kgD/jQD/jAD/jAD/gAD/jQD/jAD/jAD/jQD//wD/iwD/jAD/jAD/jAD/igD/jAD/jAD/iwD/jgD/jAD/jAD/jAD/jAD/jAD/jAD/jAD/jAD/igD/jAD/jAD/jAD/jAD/jAD/gAD/jAD/igD/iwD/jAD/jAD/iwD/jQD/jQD/jAD/jAD/jQD/jAD/iwD/iwD/jAD/jgD/jAD/jAD/jQD/jQD/jAD/jQD/jAD/jAD/iwD/iQD/jAD/iwD/jAD/jQD/iwD/iwD/mQD/iwD/jAD/igD/jAD/jAD/jAD/iwD/jAD/jAAAAAB8sg5HAAAAVHRSTlMAC01wiqS+2PIVYrL3BmnD/cIBWt7dWUbOzEIbu+3KsZd+ZLYYNebcjDwC4zJY9oks9VWB/Jz+gKO0K6L7a3/sQVTTIQ2zQKhXY24FVsg9r+D0LlI7/1SwAAAAAWJLR0RVkwS4MwAAAAlwSFlzAAAN1wAADdcBQiibeAAAAAd0SU1FB+AFCwMxC5a42TAAAAKTSURBVFjDpVdpQ+IwEB1uUAG3iq52BYrslksBF3RFEUUR77P//7esmUk5bJM27fvSJpP32plMJgmAAJFoLJ5IptLpVDIRj0UjoITMyuqatYS11ZWMX3Y2l1+3XLD+I5f1Qdc2Ni0hCluaF3/7pyXFzq6Urv9aGLtXLJWNSsUol4p7C937VTH/95/ZMLNWb8wNjXrNnJmaLRH/wI78YbvjtHbah9zcPXKP3l9u7/V1gYP9Ho04PnGJpfaP808HYh8Hp3zQmVOBf/98KJ+l4TmNu3D4T/2jS/DA5Yi8uPoWf4rf+NqLD3A9pkguzYVO8ze+8eYD3JBCczEfKH9GPr6P/0BeTOY92xQ/T/9ncaBI3tptjfLfJf5T1j919g+RULTncoPmH/wLAOXDHTWyuH57AxWBAeZkgepDDtX6oCIAfSTl8D2P60dXE9BxZeXZawbrVxvUBKCNVY7VyXv8mY6qQAdp919vE6wfoCoAJk+mCK6CGiijhtU+AlH8lbq6QB2JUYhh/WyoCzSw0sYgjkmpzgcoMmYcEuxRCiJQYswEJNmjLBjzMP3Cg8BYZswkpNjDEIyRTSMYzJiCNHtUgghUmDEdXiC0C9IgSgV4EKXTKBXg0yhNJKkATyRpKssE7FSWLiaZgL2YpMtZJmAv59AFJXxJC11UQ5f18BtLthB0azMfqbUVdHN94i1tJ9j2/jxr7wY7YLzMe/aDHHFeF7qqTfVD1tvSBaTVVT3mvX8sdx8dkxeecbAPmp/fDScWRdLnUddZRbUzsgQ+bIN2QV74Oe4b7lenqy7X97hwvH+CAK2mZUNy5Xn7ACGqE2sOwaXrVX4BvS1aUjy/gAe0u4KYbj550RkkV99HP3yGcJdvgt/r/39tp2NRscryWgAAACV0RVh0ZGF0ZTpjcmVhdGUAMjAxNi0wNS0xMVQwMzo0OToxMSswMjowMC4eJQAAAAAldEVYdGRhdGU6bW9kaWZ5ADIwMTYtMDUtMTFUMDM6NDk6MTErMDI6MDBfQ528AAAAGXRFWHRTb2Z0d2FyZQB3d3cuaW5rc2NhcGUub3Jnm+48GgAAAABJRU5ErkJggg=="
 
 /***/ },
-/* 234 */
+/* 227 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = __webpack_require__.p + "482557e98eaf0804ed3ec4a1f5462d4d.png";
 
 /***/ },
-/* 235 */
+/* 228 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__.p + "eb5f70f37afcd9108c06909ffcc41d04.png";
+	module.exports = __webpack_require__.p + "6f8222533499c750a786cad484ebbf6e.png";
 
 /***/ },
-/* 236 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__.p + "1fb0e7b054e12ccb633183ff07f3bf11.png";
-
-/***/ },
-/* 237 */
+/* 229 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = __webpack_require__.p + "c5e445d73becc7fb2c763e79ea5183aa.png";
 
 /***/ },
-/* 238 */
+/* 230 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = __webpack_require__.p + "686918d4140485c3287490ac99078b47.png";
 
 /***/ },
-/* 239 */
+/* 231 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__.p + "b0186405803988a116ffe822285ef786.png";
+	module.exports = __webpack_require__.p + "a8ef14782f2a3caa1955ee99a896524a.png";
 
 /***/ },
-/* 240 */
+/* 232 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = __webpack_require__.p + "48f82276164fa52f5c5e65263f73181d.png";
 
 /***/ },
-/* 241 */
+/* 233 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = __webpack_require__.p + "dd5621f470fb8a05224fec1df485ac68.png";
 
 /***/ },
-/* 242 */
+/* 234 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = __webpack_require__.p + "4d8aab661eccaab5f40d6b787bcefac4.png";
 
 /***/ },
-/* 243 */
+/* 235 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__.p + "823007dcdb793b43c08886789874b628.png";
+	module.exports = __webpack_require__.p + "f73310366d61b2515570c4c4dd702503.png";
 
 /***/ },
-/* 244 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__.p + "af9b451a0d053538feacd644ec02f377.png";
-
-/***/ },
-/* 245 */
+/* 236 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = __webpack_require__.p + "7f05ec88254b33d40dd32e9eee329ac2.png";
 
 /***/ },
-/* 246 */
+/* 237 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = __webpack_require__.p + "c95b9347cbd1d2ce1e16fe8991e761d1.png";
 
 /***/ },
-/* 247 */
+/* 238 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__.p + "2f240ed501d9840d55b30b4296974849.png";
+	module.exports = __webpack_require__.p + "44b8c18e2a97f57b864c10cac7c3220c.png";
 
 /***/ },
-/* 248 */
+/* 239 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__.p + "698d32daa02cef6a7a48afe3caa032ab.png";
+	module.exports = __webpack_require__.p + "e26bd328ec58c0d047f0782b648ee970.png";
 
 /***/ },
-/* 249 */
+/* 240 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__.p + "93ab29900819d6f20bb79b8d957f7960.png";
+	module.exports = __webpack_require__.p + "ab2a399b9a10e777cf56ed1b43d09e27.png";
 
 /***/ },
-/* 250 */
+/* 241 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = __webpack_require__.p + "28a6472fc75cb2a07e869cf9070167a2.png";
 
 /***/ },
-/* 251 */
+/* 242 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = __webpack_require__.p + "8f48a92572152a3fa23a989bc4485e81.png";
 
 /***/ },
-/* 252 */
+/* 243 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = __webpack_require__.p + "4657e895b04e3917319d38595f64e184.png";
 
 /***/ },
-/* 253 */
+/* 244 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__.p + "bb0a899860841a909291b1c679254ce0.png";
+	module.exports = __webpack_require__.p + "f80291c6e04e888804ac345d5204f373.png";
 
 /***/ },
-/* 254 */
+/* 245 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__.p + "40730d79cef00861c43a2ad141438883.png";
+	module.exports = __webpack_require__.p + "a87b4e0ed45605ba87562c353c969b2d.png";
 
 /***/ },
-/* 255 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__.p + "9c54c2bf0131317f46af3615a417da0a.png";
-
-/***/ },
-/* 256 */
+/* 246 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = __webpack_require__.p + "0a1d94e386511d0ab9bfaef8f3504d12.png";
 
 /***/ },
-/* 257 */
+/* 247 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__.p + "d84904d85e94b97bf1985ddf47a57b94.png";
+	module.exports = __webpack_require__.p + "2a4ddd44b5fa401748f1b084f953e2cc.png";
 
 /***/ },
-/* 258 */
+/* 248 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = __webpack_require__.p + "f47039c8e8746bca99a05abfd442e780.png";
 
 /***/ },
-/* 259 */
+/* 249 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__.p + "ac56e0ba5b88523342a41309b36880ce.png";
+	module.exports = __webpack_require__.p + "3026503b1fd6799df6ed17548590c529.png";
 
 /***/ },
-/* 260 */
+/* 250 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__.p + "f34c97b0d7fab3340aaa6362e920a2e5.png";
+	module.exports = __webpack_require__.p + "1f5550429bded6bb18323fd36d6caf26.png";
 
 /***/ },
-/* 261 */
+/* 251 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__.p + "e609acd65a1600ef4815094578e60d31.png";
+	module.exports = __webpack_require__.p + "334bce8923c668c1de17f32a0ba788e7.png";
 
 /***/ },
-/* 262 */
+/* 252 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__.p + "cec5ce31c6e7753610633b23dd1a578c.png";
+	module.exports = __webpack_require__.p + "2670ee67595c1f1d73089c9491f64fd2.png";
 
 /***/ },
-/* 263 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__.p + "bccc940739117d041db82a46a9139583.png";
-
-/***/ },
-/* 264 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__.p + "a4787611fd1991daf173752f701315a6.png";
-
-/***/ },
-/* 265 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__.p + "b5dcc61a0168b2fc53c1d9dcd4e0ff05.png";
-
-/***/ },
-/* 266 */
+/* 253 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = __webpack_require__.p + "2f093b431a13d4a272834074419ffd3d.png";
 
 /***/ },
-/* 267 */
+/* 254 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__.p + "05e0c21315acd6885a21e1b4bba648a8.png";
+	module.exports = __webpack_require__.p + "7343758ea160afd4d0bf8a7076486e6f.png";
 
 /***/ },
-/* 268 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__.p + "53a99643f6b3df2636e45a3a9bb561bb.png";
-
-/***/ },
-/* 269 */
+/* 255 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = __webpack_require__.p + "50380d0e4c139d397d37ee1923cdc6a5.png";
 
 /***/ },
-/* 270 */
+/* 256 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = __webpack_require__.p + "20454d1189468219b0b93052e021c764.png";
 
 /***/ },
-/* 271 */
+/* 257 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__.p + "9e15caa52dd9c03c17fa486d08b34252.png";
+	module.exports = __webpack_require__.p + "ad42ff8eae322272093443c1b176fba6.png";
 
 /***/ },
-/* 272 */
+/* 258 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__.p + "6890c3def4a118da8784e4c6f1884bd0.png";
+	module.exports = __webpack_require__.p + "943e1a1863ade0d7e3fc741d1224c96a.png";
 
 /***/ },
-/* 273 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__.p + "f1bcda2e66dad3cebab2bcc9bdf7f6d4.png";
-
-/***/ },
-/* 274 */
+/* 259 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = __webpack_require__.p + "61d24d708a946507e6ca09e6498c1690.png";
 
 /***/ },
-/* 275 */
+/* 260 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = __webpack_require__.p + "58f552e4fb0594aa9e53f442d98d6f65.png";
 
 /***/ },
-/* 276 */
+/* 261 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = __webpack_require__.p + "36bf705668dd545d4321052ff868e9ca.png";
 
 /***/ },
-/* 277 */
+/* 262 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__.p + "c21f2a71c78634fc9debf6a91319eae9.png";
+	module.exports = __webpack_require__.p + "d55f1e4fa12e937b91108980d3669c8f.png";
 
 /***/ },
-/* 278 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__.p + "5c44d31250e28c7aba6d0eb7c24ba57c.png";
-
-/***/ },
-/* 279 */
+/* 263 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = __webpack_require__.p + "75c8be862b4844a2a6fce2cf1f7392fe.png";
 
 /***/ },
-/* 280 */
+/* 264 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = __webpack_require__.p + "5b97c543a512a3411ac025eb36b6104b.png";
 
 /***/ },
-/* 281 */
+/* 265 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = __webpack_require__.p + "bf3409fc07eb47ef2ef9b38eb6a7a6a2.png";
 
 /***/ },
-/* 282 */
+/* 266 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__.p + "5c770c9da452103818a6d505e4c241e0.png";
+	module.exports = __webpack_require__.p + "bcc1ac8871b8ea08b8fb4462b76c68ba.png";
 
 /***/ },
-/* 283 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__.p + "273eb21692df58f36b9893425d6ab45e.png";
-
-/***/ },
-/* 284 */
+/* 267 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = __webpack_require__.p + "bf422ac0a3886ab31fedb6c53252866b.png";
 
 /***/ },
-/* 285 */
+/* 268 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = __webpack_require__.p + "5543e470fece062ea7293eb99447822d.png";
 
 /***/ },
-/* 286 */
+/* 269 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = __webpack_require__.p + "75539e38419a68206002859bbacf91f9.png";
 
 /***/ },
-/* 287 */
+/* 270 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = __webpack_require__.p + "b557bb8a60f669de1e1da119de16a6d8.png";
 
 /***/ },
-/* 288 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__.p + "409852a9ce6ee5d5d5731d97548d79ce.png";
-
-/***/ },
-/* 289 */
+/* 271 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = __webpack_require__.p + "d83b69d96330fe5f00ad4f015e3143fe.png";
 
 /***/ },
-/* 290 */
+/* 272 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__.p + "6f482e853df5e7c90e3da73b185f69fb.png";
+	module.exports = __webpack_require__.p + "658020e0d8b742b7b068bb11ba8b067b.png";
 
 /***/ },
-/* 291 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__.p + "182649c9a31270f753bccdf59192e904.png";
-
-/***/ },
-/* 292 */
+/* 273 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = __webpack_require__.p + "29e1720abf9db54133846c54916be51f.png";
 
 /***/ },
-/* 293 */
+/* 274 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = __webpack_require__.p + "5396a79f18f8cd78ff808e8df8004a77.png";
 
 /***/ },
-/* 294 */
+/* 275 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = __webpack_require__.p + "202f8225fe27c7df7cd841d0cf03228b.png";
 
 /***/ },
-/* 295 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__.p + "7f71623fe3901e9a4dd9e148feed4585.png";
-
-/***/ },
-/* 296 */
+/* 276 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = __webpack_require__.p + "fab6e8a4657ad325e5a9eb367dc576f6.png";
 
 /***/ },
-/* 297 */
+/* 277 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = __webpack_require__.p + "1b24b4f82076840c320e0bd37d1bc1e8.png";
 
 /***/ },
-/* 298 */
+/* 278 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = __webpack_require__.p + "4cbe82ae202fe3c4158136f5b1abe79f.png";
 
 /***/ },
-/* 299 */
+/* 279 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__.p + "810865f9052a574b967edc81f92d236f.png";
+	module.exports = __webpack_require__.p + "f352a0028b6810c1bf677d88cf962c3f.png";
 
 /***/ },
-/* 300 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__.p + "44c14e3259d2d3cd065904974ed03e2a.png";
-
-/***/ },
-/* 301 */
+/* 280 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = __webpack_require__.p + "9a586a08c4bcd99b4f878ad9034f97c9.png";
 
 /***/ },
-/* 302 */
+/* 281 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = __webpack_require__.p + "964dc82b5ddcccdcea87cfd9f2916c50.png";
 
 /***/ },
-/* 303 */
+/* 282 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = __webpack_require__.p + "3c5a804f2c661ac9314a0e41cef7112c.png";
 
 /***/ },
-/* 304 */
+/* 283 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__.p + "d35a970cbd68825b97b79842847ca4d7.png";
+	module.exports = __webpack_require__.p + "f169739dfe8856df9016e30faeb99a06.png";
 
 /***/ },
-/* 305 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__.p + "fedb202607a191a3a058b3a9ab2c1710.png";
-
-/***/ },
-/* 306 */
+/* 284 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = __webpack_require__.p + "40b39d9292e22dd11c47525203ba321e.png";
 
 /***/ },
-/* 307 */
+/* 285 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = __webpack_require__.p + "2d24650959d56befc38ed58022985e79.png";
 
 /***/ },
-/* 308 */
+/* 286 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = __webpack_require__.p + "1f6a717f5ea307c5154b3ef05080c84e.png";
 
 /***/ },
-/* 309 */
+/* 287 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = __webpack_require__.p + "106a6a1b199f0312bffdd9f61ce05555.png";
 
 /***/ },
-/* 310 */
+/* 288 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = __webpack_require__.p + "05cbca18b39e0c970cce8bba89df0bf1.png";
 
 /***/ },
-/* 311 */
+/* 289 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__.p + "d2f350e70c6c688634350b0e226cac96.png";
+	module.exports = __webpack_require__.p + "f58158f56bce9bcb57eae87f7b84ee3e.png";
 
 /***/ },
-/* 312 */
+/* 290 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__.p + "309cb761d8775502f66e8334475cb33a.png";
+	module.exports = __webpack_require__.p + "1d76e9b98ca5a0ee8e3047c310cd59bb.png";
 
 /***/ },
-/* 313 */
+/* 291 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__.p + "3542c433e52e0743bcecf114959645f0.png";
+	module.exports = __webpack_require__.p + "f3788433cf82195144827d4ed0b8211a.png";
 
 /***/ },
-/* 314 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__.p + "83f503155ebb7b81530948e9236a8ee1.png";
-
-/***/ },
-/* 315 */
+/* 292 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = __webpack_require__.p + "d5eb2aea3805df893eb82d8a9e99ab5b.png";
 
 /***/ },
-/* 316 */
+/* 293 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = __webpack_require__.p + "5910c3ebe65f7ce25b1dad23158e45db.png";
 
 /***/ },
-/* 317 */
+/* 294 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = __webpack_require__.p + "2ea3b2b9f3ad9809b2fc97ac162d499a.png";
 
 /***/ },
-/* 318 */
+/* 295 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = __webpack_require__.p + "9849b89ef774b55d8890b7b0677a1e68.png";
 
 /***/ },
-/* 319 */
+/* 296 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = __webpack_require__.p + "6a43ea5d71f11614f1c9a58d657075a0.png";
 
 /***/ },
-/* 320 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__.p + "a9f8c08b44a3b0bd43ee4e9953481f75.png";
-
-/***/ },
-/* 321 */
+/* 297 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = __webpack_require__.p + "b35c6d22c215e7b00f880b85938a068a.png";
 
 /***/ },
-/* 322 */
+/* 298 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = __webpack_require__.p + "004ad99d76c0f65530ae27a9ee2dad6f.png";
 
 /***/ },
-/* 323 */
+/* 299 */
 /***/ function(module, exports) {
 
 	module.exports = "data:image/png;base64,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"
 
 /***/ },
-/* 324 */
+/* 300 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = __webpack_require__.p + "cc0cb5b526a2eb592c0c5724c6c822b2.png";
 
 /***/ },
-/* 325 */
+/* 301 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__.p + "90209b5bff36f4bb796865233e295000.png";
+	module.exports = __webpack_require__.p + "685fc4c0b1fb3c81ad01396b7ba15147.png";
 
 /***/ },
-/* 326 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__.p + "a31495c13754088750b998cfe2e3e369.png";
-
-/***/ },
-/* 327 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__.p + "8df867963b5688d22caa853d9b707530.png";
-
-/***/ },
-/* 328 */
+/* 302 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = __webpack_require__.p + "71728ab5484c0b13bd9d7fbeb5c83baf.png";
 
 /***/ },
-/* 329 */
+/* 303 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = __webpack_require__.p + "747271e7c265c2ffbcd17620542023be.png";
 
 /***/ },
-/* 330 */
+/* 304 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = __webpack_require__.p + "807e96f3aa17c7c8fd73481f3b028984.png";
 
 /***/ },
-/* 331 */
+/* 305 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__.p + "b654077e40caee84df06785c6e37c4b5.png";
+	module.exports = __webpack_require__.p + "e9e4f68853a458f443cfc0b49f3d5ab9.png";
 
 /***/ },
-/* 332 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__.p + "7a0a7a615fd951c727416b4d7d702fcd.png";
-
-/***/ },
-/* 333 */
+/* 306 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = __webpack_require__.p + "021c10e2e830e48a997f71acc3e85873.png";
 
 /***/ },
-/* 334 */
+/* 307 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = __webpack_require__.p + "f03ce3a2c082da3e4e8e1f5d38b9dbff.png";
 
 /***/ },
-/* 335 */
+/* 308 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__.p + "d4d90c3ac89687a7f26e7063c14390cc.png";
+	module.exports = __webpack_require__.p + "a9523b0b6389a04cdfcf5ef5c5f86fca.png";
 
 /***/ },
-/* 336 */
+/* 309 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = __webpack_require__.p + "acf75b5b2e0564f3f8973a89b68dc8c1.png";
 
 /***/ },
-/* 337 */
+/* 310 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var map = {
-		"./PlayerViz": 169,
-		"./PlayerViz.js": 169,
-		"./PlayersData": 338,
-		"./PlayersData.json": 338,
-		"./Visualization": 170,
-		"./Visualization.js": 170,
-		"./html2canvas": 339,
-		"./html2canvas.js": 339,
-		"./img/76ers.png": 188,
-		"./img/birdjersey.jpg": 340,
-		"./img/birdjersey.png": 189,
-		"./img/birdjersey2.jpeg": 341,
-		"./img/birdjerseylarge.png": 190,
-		"./img/birdtrans1.png": 191,
-		"./img/birdtrans2.png": 192,
-		"./img/birdtrans3.png": 193,
-		"./img/bucks.png": 194,
-		"./img/bulls.png": 195,
-		"./img/cavaliers.png": 196,
-		"./img/celtics.png": 197,
-		"./img/dirkjersey.jpg": 342,
-		"./img/dirkjersey.png": 198,
-		"./img/dirkjersey2.jpeg": 343,
-		"./img/dirkjerseylarge.png": 199,
-		"./img/dirktrans1.png": 200,
-		"./img/dirktrans2.png": 201,
-		"./img/dirktrans3.png": 202,
-		"./img/duncanjersey.jpg": 344,
-		"./img/duncanjersey.png": 203,
-		"./img/duncanjersey2.jpeg": 345,
-		"./img/duncanjerseylarge.png": 204,
-		"./img/duncantrans1.png": 205,
-		"./img/duncantrans2.png": 206,
-		"./img/duncantrans3.png": 207,
-		"./img/durantjersey.jpeg": 346,
-		"./img/durantjersey.png": 208,
-		"./img/durantjerseylarge.png": 209,
-		"./img/duranttrans1.png": 210,
-		"./img/duranttrans2.png": 211,
-		"./img/duranttrans3.png": 212,
-		"./img/dwadejersey.png": 213,
-		"./img/dwadejersey2.jpeg": 347,
-		"./img/dwadejerseylarge.png": 214,
-		"./img/dwadetrans1.png": 215,
-		"./img/dwadetrans2.png": 216,
-		"./img/dwadetrans3.png": 217,
-		"./img/elginjersey.jpg": 348,
-		"./img/elginjersey.png": 218,
-		"./img/elginjersey2.jpg": 349,
-		"./img/elginjersey3.jpeg": 350,
-		"./img/elginjerseylarge.png": 219,
-		"./img/elgintrans1.png": 220,
-		"./img/elgintrans2.png": 221,
-		"./img/elgintrans3.png": 222,
-		"./img/hakeemjersey.jpg": 351,
-		"./img/hakeemjersey.png": 223,
-		"./img/hakeemjerseylarge.png": 224,
-		"./img/hakeemtrans1.png": 225,
-		"./img/hakeemtrans2.png": 226,
-		"./img/hakeemtrans3.jpg": 352,
-		"./img/hakeemtrans3.png": 227,
-		"./img/hawks.png": 228,
-		"./img/heat.png": 229,
-		"./img/helpIconGhostwhite.png": 230,
-		"./img/helpIconOrange.png": 231,
-		"./img/helpIconWhite.png": 232,
-		"./img/infoIcon.png": 233,
-		"./img/jazz.png": 234,
-		"./img/jordanjersey.jpg": 353,
-		"./img/jordanjersey.png": 235,
-		"./img/jordanjersey2.jpeg": 354,
-		"./img/jordanjerseylarge.png": 236,
-		"./img/jordantrans1.png": 237,
-		"./img/jordantrans2.png": 238,
-		"./img/jordantrans3.png": 239,
-		"./img/jordantrans5.png": 240,
-		"./img/jordantrans6.png": 241,
-		"./img/jordantrans7.png": 242,
-		"./img/kareemjersey.jpg": 355,
-		"./img/kareemjersey.png": 243,
-		"./img/kareemjersey2.jpeg": 356,
-		"./img/kareemjerseylarge.png": 244,
-		"./img/kareemtrans1.png": 245,
-		"./img/kareemtrans2.png": 246,
-		"./img/kareemtrans3.jpg": 357,
-		"./img/kareemtrans3.png": 247,
-		"./img/kgjersey.jpg": 358,
-		"./img/kgjersey.png": 248,
-		"./img/kgjerseylarge.png": 249,
-		"./img/kgtrans1.png": 250,
-		"./img/kgtrans2.png": 251,
-		"./img/kgtrans3.png": 252,
-		"./img/kobejersey.jpg": 359,
-		"./img/kobejersey.png": 253,
-		"./img/kobejersey2.jpeg": 360,
-		"./img/kobejerseylarge.png": 254,
-		"./img/kobetrans1.png": 255,
-		"./img/kobetrans2.png": 256,
-		"./img/kobetrans3.png": 257,
-		"./img/lakers.png": 258,
-		"./img/lebronjersey.jpg": 361,
-		"./img/lebronjersey.png": 259,
-		"./img/lebronjersey2.jpeg": 362,
-		"./img/lebronjerseylarge.png": 260,
-		"./img/lebrontrans1.png": 261,
-		"./img/lebrontrans2.png": 262,
-		"./img/lebrontrans3.png": 263,
-		"./img/lebrontrans4.png": 264,
-		"./img/lebrontrans6.png": 265,
-		"./img/magic.png": 266,
-		"./img/magicjersey.jpg": 363,
-		"./img/magicjersey.png": 267,
-		"./img/magicjerseylarge.png": 268,
-		"./img/magictrans1.png": 269,
-		"./img/magictrans2.png": 270,
-		"./img/mailmanjersey.jpg": 364,
-		"./img/mailmanjersey.png": 271,
-		"./img/mailmanjerseylarge.png": 272,
-		"./img/mailmantrans1.png": 273,
-		"./img/mailmantrans2.png": 274,
-		"./img/mailmantrans3.png": 275,
-		"./img/mavericks.png": 276,
-		"./img/mosesjersey.jpeg": 365,
-		"./img/mosesjersey.png": 277,
-		"./img/mosesjerseylarge.png": 278,
-		"./img/mosestrans1.png": 279,
-		"./img/mosestrans2.png": 280,
-		"./img/mosestrans3.png": 281,
-		"./img/nashjersey.jpg": 366,
-		"./img/nashjersey.png": 282,
-		"./img/nashjersey2.jpg": 367,
-		"./img/nashjerseylarge.png": 283,
-		"./img/nashtrans1.png": 284,
-		"./img/nashtrans2.png": 285,
-		"./img/nashtrans3.png": 286,
-		"./img/nbaLogo.jpg": 368,
-		"./img/nbaLogo.png": 287,
-		"./img/nbamvp.jpeg": 369,
-		"./img/nbatrophy1.png": 186,
-		"./img/nbatrophy2.png": 288,
-		"./img/nets.png": 289,
-		"./img/oscarjersey.jpeg": 370,
-		"./img/oscarjersey.jpg": 371,
-		"./img/oscarjersey.png": 290,
-		"./img/oscarjersey2.jpg": 372,
-		"./img/oscarjerseylarge.png": 291,
-		"./img/oscartrans1.png": 292,
-		"./img/oscartrans2.png": 293,
-		"./img/oscartrans3.png": 294,
-		"./img/oscartrans4.png": 295,
-		"./img/raptors.png": 296,
-		"./img/rockets.png": 297,
-		"./img/royals.png": 298,
-		"./img/russelljersey.jpg": 373,
-		"./img/russelljersey.png": 299,
-		"./img/russelljerseylarge.png": 300,
-		"./img/russelltrans1.png": 301,
-		"./img/russelltrans2.png": 302,
-		"./img/russelltrans3.png": 303,
-		"./img/shaqjersey.jpg": 374,
-		"./img/shaqjersey.png": 304,
-		"./img/shaqjerseylarge.png": 305,
-		"./img/shaqtrans1.png": 306,
-		"./img/shaqtrans2.png": 307,
-		"./img/shaqtrans3.png": 308,
-		"./img/sonics.png": 309,
-		"./img/spurs.png": 310,
-		"./img/stephjersey.jpg": 375,
-		"./img/stephjersey.png": 311,
-		"./img/stephjersey2.jpeg": 376,
-		"./img/stephjerseylarge.png": 312,
-		"./img/stephtrans1.png": 313,
-		"./img/stephtrans2.png": 314,
-		"./img/stephtrans3.png": 315,
-		"./img/stephtrans7.png": 316,
-		"./img/stephtrans8.png": 317,
-		"./img/stephtrans9.png": 318,
-		"./img/suns.png": 319,
-		"./img/teamlogos.png": 320,
-		"./img/thunder.png": 321,
-		"./img/timberwolves.png": 322,
-		"./img/twitter-256.png": 323,
-		"./img/warriors.png": 324,
-		"./img/westjersey.jpg": 377,
-		"./img/westjersey.png": 325,
-		"./img/westjersey3.jpg": 378,
-		"./img/westjerseylarge.png": 326,
-		"./img/westjerseylarge3.png": 327,
-		"./img/westtrans1.png": 328,
-		"./img/westtrans2.png": 329,
-		"./img/westtrans3.png": 330,
-		"./img/wiltjersey.jpg": 379,
-		"./img/wiltjersey.png": 331,
-		"./img/wiltjersey2.jpeg": 380,
-		"./img/wiltjerseylarge.png": 332,
-		"./img/wilttrans1.png": 333,
-		"./img/wilttrans2.png": 334,
-		"./img/wilttrans3.png": 335,
-		"./img/wizards.png": 336,
-		"./index": 1,
-		"./index.js": 1,
-		"./nbaIcon.ico": 382,
-		"./style.css": 383
+		"./birdjerseysmallX.png": 189,
+		"./dirkjerseysmallX.png": 197,
+		"./duncanjerseysmallX.png": 201,
+		"./durantjerseysmallX.png": 205,
+		"./dwadejerseysmallX.png": 209,
+		"./elginjerseysmallX.png": 213,
+		"./hakeemjerseysmallX.png": 217,
+		"./jordanjerseysmallX.png": 228,
+		"./kareemjerseysmallX.png": 235,
+		"./kawhijerseysmallX.png": 239,
+		"./kgjerseysmallX.png": 240,
+		"./kobejerseysmallX.png": 244,
+		"./lebronjerseysmallX.png": 249,
+		"./magicjerseysmallX.png": 254,
+		"./mailmanjerseysmallX.png": 257,
+		"./mosesjerseysmallX.png": 262,
+		"./nashjerseysmallX.png": 266,
+		"./oscarjerseysmallX.png": 272,
+		"./russelljerseysmallX.png": 279,
+		"./shaqjerseysmallX.png": 283,
+		"./stephjerseysmallX.png": 289,
+		"./westjerseysmallX.png": 301,
+		"./wiltjerseysmallX.png": 305
 	};
 	function webpackContext(req) {
 		return __webpack_require__(webpackContextResolve(req));
@@ -34986,11 +34734,11 @@
 	};
 	webpackContext.resolve = webpackContextResolve;
 	module.exports = webpackContext;
-	webpackContext.id = 337;
+	webpackContext.id = 310;
 
 
 /***/ },
-/* 338 */
+/* 311 */
 /***/ function(module, exports) {
 
 	module.exports = [
@@ -35196,7 +34944,7 @@
 			"pics": [
 				"jordantrans1.png",
 				"jordantrans2.png",
-				"jordantrans3.jpg"
+				"jordantrans3.png"
 			],
 			"teams": [
 				{
@@ -35508,9 +35256,9 @@
 				]
 			},
 			"pics": [
-				"kobetrans1.png",
-				"kobetrans2.png",
-				"kobetrans3.png"
+				"birdtrans1.png",
+				"birdtrans2.png",
+				"birdtrans3.png"
 			],
 			"teams": [
 				{
@@ -35538,7 +35286,7 @@
 			"nickname": "lebron",
 			"age": {
 				"first": 19,
-				"last": 31
+				"last": 33
 			},
 			"awards": {
 				"2004": [],
@@ -35599,7 +35347,12 @@
 				"2016": [
 					"AS",
 					"AN1"
-				]
+				],
+				"2017": [
+					"AS",
+					"AN1"
+				],
+				"2018": []
 			},
 			"pics": [
 				"lebrontrans1.png",
@@ -35624,16 +35377,16 @@
 				{
 					"team": "cavaliers",
 					"start": 2015,
-					"end": 2016,
+					"end": 2018,
 					"careerStart": 12,
-					"careerEnd": 13
+					"careerEnd": 15
 				}
 			],
 			"totals": {
 				"MVP": "4",
-				"AN": "11",
+				"AN": "13",
 				"AD": "6",
-				"AS": "12"
+				"AS": "13"
 			},
 			"championships": [
 				2012,
@@ -35646,7 +35399,7 @@
 			"nickname": "steph",
 			"age": {
 				"first": 21,
-				"last": 27
+				"last": 29
 			},
 			"awards": {
 				"2010": [],
@@ -35666,30 +35419,36 @@
 					"AS",
 					"AN1",
 					"MVP"
-				]
+				],
+				"2017": [
+					"AS",
+					"AN2"
+				],
+				"2018": []
 			},
 			"pics": [
-				"kobetrans1.png",
-				"kobetrans2.png",
-				"kobetrans3.png"
+				"stephtrans1.png",
+				"stephtrans2.png",
+				"stephtrans3.png"
 			],
 			"teams": [
 				{
 					"team": "warriors",
 					"start": 2010,
-					"end": 2016,
+					"end": 2018,
 					"careerStart": 1,
-					"careerEnd": 7
+					"careerEnd": 9
 				}
 			],
 			"totals": {
 				"MVP": "2",
-				"AN": "3",
+				"AN": "4",
 				"AD": "0",
-				"AS": "3"
+				"AS": "4"
 			},
 			"championships": [
-				2015
+				2015,
+				2017
 			]
 		},
 		{
@@ -35777,9 +35536,9 @@
 				"2016": []
 			},
 			"pics": [
-				"kobetrans1.png",
-				"kobetrans2.png",
-				"kobetrans3.png"
+				"kgtrans1.png",
+				"kgtrans2.png",
+				"kgtrans3.png"
 			],
 			"teams": [
 				{
@@ -35886,9 +35645,9 @@
 				]
 			},
 			"pics": [
-				"kobetrans1.png",
-				"kobetrans2.png",
-				"kobetrans3.png"
+				"russelltrans1.png",
+				"russelltrans2.png",
+				"russelltrans3.png"
 			],
 			"teams": [
 				{
@@ -36020,9 +35779,9 @@
 				]
 			},
 			"pics": [
-				"kobetrans1.png",
-				"kobetrans2.png",
-				"kobetrans3.png"
+				"kareemtrans1.png",
+				"kareemtrans2.png",
+				"kareemtrans3.png"
 			],
 			"teams": [
 				{
@@ -36133,9 +35892,9 @@
 				"2004": []
 			},
 			"pics": [
-				"kobetrans1.png",
-				"kobetrans2.png",
-				"kobetrans3.png"
+				"mailmantrans1.png",
+				"mailmantrans2.png",
+				"mailmantrans3.png"
 			],
 			"teams": [
 				{
@@ -36239,9 +35998,9 @@
 				"2011": []
 			},
 			"pics": [
-				"kobetrans1.png",
-				"kobetrans2.png",
-				"kobetrans3.png"
+				"shaqtrans1.png",
+				"shaqtrans2.png",
+				"shaqtrans3.png"
 			],
 			"teams": [
 				{
@@ -36368,9 +36127,9 @@
 				]
 			},
 			"pics": [
-				"kobetrans1.png",
-				"kobetrans2.png",
-				"kobetrans3.png"
+				"wilttrans1.png",
+				"wilttrans2.png",
+				"wilttrans3.png"
 			],
 			"teams": [
 				{
@@ -36476,9 +36235,9 @@
 				]
 			},
 			"pics": [
-				"kobetrans1.png",
-				"kobetrans2.png",
-				"kobetrans3.png"
+				"westtrans1.png",
+				"westtrans2.png",
+				"westtrans3.png"
 			],
 			"teams": [
 				{
@@ -36559,10 +36318,9 @@
 				"1974": []
 			},
 			"pics": [
-				"kobetrans1.png",
-				"kobetrans2.png",
-				"kobetrans3.png",
-				"kobetrans4.png"
+				"oscartrans1.png",
+				"oscartrans2.png",
+				"oscartrans3.png"
 			],
 			"teams": [
 				{
@@ -36666,9 +36424,9 @@
 				"2002": []
 			},
 			"pics": [
-				"jordantrans1.png",
-				"jordantrans2.png",
-				"jordantrans3.jpg"
+				"hakeemtrans1.png",
+				"hakeemtrans2.png",
+				"hakeemtrans3.png"
 			],
 			"teams": [
 				{
@@ -36751,9 +36509,9 @@
 				"2015": []
 			},
 			"pics": [
-				"kobetrans1.png",
-				"kobetrans2.png",
-				"kobetrans3.png"
+				"nashtrans1.png",
+				"nashtrans2.png",
+				"nashtrans3.png"
 			],
 			"teams": [
 				{
@@ -36798,7 +36556,7 @@
 			"nickname": "dirk",
 			"age": {
 				"first": 20,
-				"last": 37
+				"last": 39
 			},
 			"awards": {
 				"1999": [],
@@ -36858,20 +36616,22 @@
 				"2015": [
 					"AS"
 				],
-				"2016": []
+				"2016": [],
+				"2017": [],
+				"2018": []
 			},
 			"pics": [
-				"kobetrans1.png",
-				"kobetrans2.png",
-				"kobetrans3.png"
+				"dirktrans1.png",
+				"dirktrans2.png",
+				"dirktrans3.png"
 			],
 			"teams": [
 				{
 					"team": "mavericks",
 					"start": 1999,
-					"end": 2016,
+					"end": 2018,
 					"careerStart": 1,
-					"careerEnd": 18
+					"careerEnd": 20
 				}
 			],
 			"totals": {
@@ -36940,9 +36700,9 @@
 				"1972": []
 			},
 			"pics": [
-				"kobetrans1.png",
-				"kobetrans2.png",
-				"kobetrans3.png"
+				"elgintrans1.png",
+				"elgintrans2.png",
+				"elgintrans3.png"
 			],
 			"teams": [
 				{
@@ -36966,7 +36726,7 @@
 			"nickname": "dwade",
 			"age": {
 				"first": 22,
-				"last": 34
+				"last": 36
 			},
 			"awards": {
 				"2004": [],
@@ -37016,12 +36776,14 @@
 				],
 				"2016": [
 					"AS"
-				]
+				],
+				"2017": [],
+				"2018": []
 			},
 			"pics": [
-				"lebrontrans1.png",
-				"lebrontrans2.png",
-				"lebrontrans3.png"
+				"dwadetrans1.png",
+				"dwadetrans2.png",
+				"dwadetrans3.png"
 			],
 			"teams": [
 				{
@@ -37030,6 +36792,20 @@
 					"end": 2016,
 					"careerStart": 1,
 					"careerEnd": 13
+				},
+				{
+					"team": "bulls",
+					"start": 2017,
+					"end": 2017,
+					"careerStart": 14,
+					"careerEnd": 14
+				},
+				{
+					"team": "cavaliers",
+					"start": 2018,
+					"end": 2018,
+					"careerStart": 15,
+					"careerEnd": 15
 				}
 			],
 			"totals": {
@@ -37110,9 +36886,9 @@
 				"1995": []
 			},
 			"pics": [
-				"kobetrans1.png",
-				"kobetrans2.png",
-				"kobetrans3.png"
+				"mosestrans1.png",
+				"mosestrans2.png",
+				"mosestrans3.png"
 			],
 			"teams": [
 				{
@@ -37180,7 +36956,7 @@
 			"nickname": "durant",
 			"age": {
 				"first": 19,
-				"last": 27
+				"last": 29
 			},
 			"awards": {
 				"2008": [],
@@ -37212,12 +36988,17 @@
 				"2016": [
 					"AS",
 					"AN2"
-				]
+				],
+				"2017": [
+					"AS",
+					"AN2"
+				],
+				"2018": []
 			},
 			"pics": [
-				"kobetrans1.png",
-				"kobetrans2.png",
-				"kobetrans3.png"
+				"duranttrans1.png",
+				"duranttrans2.png",
+				"duranttrans3.png"
 			],
 			"teams": [
 				{
@@ -37233,20 +37014,185 @@
 					"end": 2016,
 					"careerStart": 2,
 					"careerEnd": 9
+				},
+				{
+					"team": "warriors",
+					"start": 2017,
+					"end": 2018,
+					"careerStart": 10,
+					"careerEnd": 11
 				}
 			],
 			"totals": {
 				"MVP": "1",
-				"AN": "3",
+				"AN": "7",
 				"AD": "0",
-				"AS": "3"
+				"AS": "7"
 			},
-			"championships": []
+			"championships": [
+				2017
+			]
 		}
 	];
 
 /***/ },
-/* 339 */
+/* 312 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var map = {
+		"./PlayerViz": 169,
+		"./PlayerViz.js": 169,
+		"./PlayersData": 311,
+		"./PlayersData.json": 311,
+		"./Visualization": 170,
+		"./Visualization.js": 170,
+		"./html2canvas": 313,
+		"./html2canvas.js": 313,
+		"./img/76ers.png": 188,
+		"./img/birdjerseysmallX.png": 189,
+		"./img/birdtrans1.png": 190,
+		"./img/birdtrans2.png": 191,
+		"./img/birdtrans3.png": 192,
+		"./img/bucks.png": 193,
+		"./img/bulls.png": 194,
+		"./img/cavaliers.png": 195,
+		"./img/celtics.png": 196,
+		"./img/dirkjerseysmallX.png": 197,
+		"./img/dirktrans1.png": 198,
+		"./img/dirktrans2.png": 199,
+		"./img/dirktrans3.png": 200,
+		"./img/duncanjerseysmallX.png": 201,
+		"./img/duncantrans1.png": 202,
+		"./img/duncantrans2.png": 203,
+		"./img/duncantrans3.png": 204,
+		"./img/durantjerseysmallX.png": 205,
+		"./img/duranttrans1.png": 206,
+		"./img/duranttrans2.png": 207,
+		"./img/duranttrans3.png": 208,
+		"./img/dwadejerseysmallX.png": 209,
+		"./img/dwadetrans1.png": 210,
+		"./img/dwadetrans2.png": 211,
+		"./img/dwadetrans3.png": 212,
+		"./img/elginjerseysmallX.png": 213,
+		"./img/elgintrans1.png": 214,
+		"./img/elgintrans2.png": 215,
+		"./img/elgintrans3.png": 216,
+		"./img/hakeemjerseysmallX.png": 217,
+		"./img/hakeemtrans1.png": 218,
+		"./img/hakeemtrans2.png": 219,
+		"./img/hakeemtrans3.png": 220,
+		"./img/hawks.png": 221,
+		"./img/heat.png": 222,
+		"./img/helpIconGhostwhite.png": 223,
+		"./img/helpIconOrange.png": 224,
+		"./img/helpIconWhite.png": 225,
+		"./img/infoIcon.png": 226,
+		"./img/jazz.png": 227,
+		"./img/jordanjerseysmallX.png": 228,
+		"./img/jordantrans1.png": 229,
+		"./img/jordantrans2.png": 230,
+		"./img/jordantrans3.png": 231,
+		"./img/jordantrans5.png": 232,
+		"./img/jordantrans6.png": 233,
+		"./img/jordantrans7.png": 234,
+		"./img/kareemjerseysmallX.png": 235,
+		"./img/kareemtrans1.png": 236,
+		"./img/kareemtrans2.png": 237,
+		"./img/kareemtrans3.png": 238,
+		"./img/kawhijerseysmallX.png": 239,
+		"./img/kgjerseysmallX.png": 240,
+		"./img/kgtrans1.png": 241,
+		"./img/kgtrans2.png": 242,
+		"./img/kgtrans3.png": 243,
+		"./img/kobejerseysmallX.png": 244,
+		"./img/kobetrans1.png": 245,
+		"./img/kobetrans2.png": 246,
+		"./img/kobetrans3.png": 247,
+		"./img/lakers.png": 248,
+		"./img/lebronjerseysmallX.png": 249,
+		"./img/lebrontrans1.png": 250,
+		"./img/lebrontrans2.png": 251,
+		"./img/lebrontrans3.png": 252,
+		"./img/magic.png": 253,
+		"./img/magicjerseysmallX.png": 254,
+		"./img/magictrans1.png": 255,
+		"./img/magictrans2.png": 256,
+		"./img/mailmanjerseysmallX.png": 257,
+		"./img/mailmantrans1.png": 258,
+		"./img/mailmantrans2.png": 259,
+		"./img/mailmantrans3.png": 260,
+		"./img/mavericks.png": 261,
+		"./img/mosesjerseysmallX.png": 262,
+		"./img/mosestrans1.png": 263,
+		"./img/mosestrans2.png": 264,
+		"./img/mosestrans3.png": 265,
+		"./img/nashjerseysmallX.png": 266,
+		"./img/nashtrans1.png": 267,
+		"./img/nashtrans2.png": 268,
+		"./img/nashtrans3.png": 269,
+		"./img/nbaLogo.jpg": 314,
+		"./img/nbaLogo.png": 270,
+		"./img/nbatrophy1.png": 186,
+		"./img/nets.png": 271,
+		"./img/oscarjerseysmallX.png": 272,
+		"./img/oscartrans1.png": 273,
+		"./img/oscartrans2.png": 274,
+		"./img/oscartrans3.png": 275,
+		"./img/raptors.png": 276,
+		"./img/rockets.png": 277,
+		"./img/royals.png": 278,
+		"./img/russelljerseysmallX.png": 279,
+		"./img/russelltrans1.png": 280,
+		"./img/russelltrans2.png": 281,
+		"./img/russelltrans3.png": 282,
+		"./img/shaqjerseysmallX.png": 283,
+		"./img/shaqtrans1.png": 284,
+		"./img/shaqtrans2.png": 285,
+		"./img/shaqtrans3.png": 286,
+		"./img/sonics.png": 287,
+		"./img/spurs.png": 288,
+		"./img/stephjerseysmallX.png": 289,
+		"./img/stephtrans1.png": 290,
+		"./img/stephtrans2.png": 291,
+		"./img/stephtrans3.png": 292,
+		"./img/stephtrans7.png": 293,
+		"./img/stephtrans8.png": 294,
+		"./img/stephtrans9.png": 295,
+		"./img/suns.png": 296,
+		"./img/thunder.png": 297,
+		"./img/timberwolves.png": 298,
+		"./img/twitter-256.png": 299,
+		"./img/warriors.png": 300,
+		"./img/westjerseysmallX.png": 301,
+		"./img/westtrans1.png": 302,
+		"./img/westtrans2.png": 303,
+		"./img/westtrans3.png": 304,
+		"./img/wiltjerseysmallX.png": 305,
+		"./img/wilttrans1.png": 306,
+		"./img/wilttrans2.png": 307,
+		"./img/wilttrans3.png": 308,
+		"./img/wizards.png": 309,
+		"./index": 1,
+		"./index.js": 1,
+		"./nbaIcon.ico": 316,
+		"./style.css": 317
+	};
+	function webpackContext(req) {
+		return __webpack_require__(webpackContextResolve(req));
+	};
+	function webpackContextResolve(req) {
+		return map[req] || (function() { throw new Error("Cannot find module '" + req + "'.") }());
+	};
+	webpackContext.keys = function webpackContextKeys() {
+		return Object.keys(map);
+	};
+	webpackContext.resolve = webpackContextResolve;
+	module.exports = webpackContext;
+	webpackContext.id = 312;
+
+
+/***/ },
+/* 313 */
 /***/ function(module, exports) {
 
 	/*
@@ -40042,3856 +39988,23 @@
 	})(window, document);
 
 /***/ },
-/* 340 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__.p + "ff90696b6dfe827de159506981b30e63.jpg";
-
-/***/ },
-/* 341 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__.p + "ff90696b6dfe827de159506981b30e63.jpeg";
-
-/***/ },
-/* 342 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__.p + "f0582b01f5a76b0d3878b06c380a8522.jpg";
-
-/***/ },
-/* 343 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__.p + "cf4138560dc7edb02d50d2b84837dc1e.jpeg";
-
-/***/ },
-/* 344 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__.p + "9f60f6b377707ffd2ccc8ff75d8fbd44.jpg";
-
-/***/ },
-/* 345 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__.p + "9f60f6b377707ffd2ccc8ff75d8fbd44.jpeg";
-
-/***/ },
-/* 346 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__.p + "b194986f9be51c6b22b15429c439681c.jpeg";
-
-/***/ },
-/* 347 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__.p + "d32f44bcf68ce6841f637625adad26d6.jpeg";
-
-/***/ },
-/* 348 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__.p + "43dde40f4c4f383a7542530b44152649.jpg";
-
-/***/ },
-/* 349 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__.p + "7d0dfb676ba61d152fd0f92797740ed5.jpg";
-
-/***/ },
-/* 350 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__.p + "c3049dd0aa7cd62079ff0524c77c8b40.jpeg";
-
-/***/ },
-/* 351 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__.p + "c70b9f7f3c44a41afbe33e3e1d0522e5.jpg";
-
-/***/ },
-/* 352 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__.p + "8997f155267bc1a2b190f0094be28bf4.jpg";
-
-/***/ },
-/* 353 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__.p + "0fa2b903431e8a84c6f68d7e4aaa677e.jpg";
-
-/***/ },
-/* 354 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__.p + "63928f2b6aaa991dcb5e29546c771d84.jpeg";
-
-/***/ },
-/* 355 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__.p + "a775179d862eff9f232be2198b7084b5.jpg";
-
-/***/ },
-/* 356 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__.p + "a775179d862eff9f232be2198b7084b5.jpeg";
-
-/***/ },
-/* 357 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__.p + "1a52332b961b6ed4623daa5d1efb14d6.jpg";
-
-/***/ },
-/* 358 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__.p + "e341ceb0606ea68e8c1b22d75e2b90fe.jpg";
-
-/***/ },
-/* 359 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__.p + "d20d5536221110c6e2651f590207768d.jpg";
-
-/***/ },
-/* 360 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__.p + "d20d5536221110c6e2651f590207768d.jpeg";
-
-/***/ },
-/* 361 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__.p + "38bbb29114fc238d8dc533365fa5a545.jpg";
-
-/***/ },
-/* 362 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__.p + "9ed8ca3cf54aa009d48f8ca696e35325.jpeg";
-
-/***/ },
-/* 363 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__.p + "3b5fb1abc2b45d4b6e2498d363d45782.jpg";
-
-/***/ },
-/* 364 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__.p + "8ec653ab4871617f2d1d10c31ab14f81.jpg";
-
-/***/ },
-/* 365 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__.p + "74a31ec99590a061a3ddcaa151cff3f2.jpeg";
-
-/***/ },
-/* 366 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__.p + "97706b4005bc840024a435203837f194.jpg";
-
-/***/ },
-/* 367 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__.p + "285dd7c56bb5113f3c1149a7f7115b33.jpg";
-
-/***/ },
-/* 368 */
+/* 314 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = __webpack_require__.p + "524a467886b251a6ef5becf35e47de10.jpg";
 
 /***/ },
-/* 369 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__.p + "3e1f357512ccc6b5cacd3b04be785dd9.jpeg";
-
-/***/ },
-/* 370 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__.p + "238245afa57c8552cd8416c51c3a20a7.jpeg";
-
-/***/ },
-/* 371 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__.p + "dea35bcec4cc51dd5bb15b122b71fcd7.jpg";
-
-/***/ },
-/* 372 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__.p + "cf709e32c9108a0873fb5aee4f543663.jpg";
-
-/***/ },
-/* 373 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__.p + "195c20f6d652fa6c494561356f90d227.jpg";
-
-/***/ },
-/* 374 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__.p + "9761ef84e622f539d123c91925d167af.jpg";
-
-/***/ },
-/* 375 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__.p + "00694293ab508b2421533f9b30322db0.jpg";
-
-/***/ },
-/* 376 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__.p + "00694293ab508b2421533f9b30322db0.jpeg";
-
-/***/ },
-/* 377 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__.p + "25e879eaaa80353083e3a899c3cd2955.jpg";
-
-/***/ },
-/* 378 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__.p + "f3ad7736bc5e961d954bdf527876ca7c.jpg";
-
-/***/ },
-/* 379 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__.p + "ae1e5e2590a54b0882c1ff8257863143.jpg";
-
-/***/ },
-/* 380 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__.p + "ae1e5e2590a54b0882c1ff8257863143.jpeg";
-
-/***/ },
-/* 381 */,
-/* 382 */
+/* 315 */,
+/* 316 */
 /***/ function(module, exports) {
 
 	module.exports = "data:image/x-icon;base64,AAABAAEAEBAAAAEACABoBQAAFgAAACgAAAAQAAAAIAAAAAEACAAAAAAAQAEAABMLAAATCwAAAAEAAAAAAACNKAAAkzUAAJY7AAAQAPkAlz0AAJc8CwCZQQUAIQn6AJ9MGACfTCIAolEfAKRUIgCkVSMAplgkAEAp+QBFK/oAq2A2AEoy+gCtZjUAUzr6AFVB+wCybkcAVUP7AFlD+gBgQ/sAXkT7AFlK+gBdSv8Au3lDAL6CWgBwW/sAw4daAHRj+wBwY/8AeWX8AMGLbADDj2wAqIKmALiLiQDFkXEAiHT8AMaWdQDHlnYAyJl5AIt7/wDLnIQAk4T8AJWH/ACVh/0AmYz8ANaynQCkm/8AtKTlANm5pgDdvaoA4sGeAOHCoQDdwK0Ataz+ANnAvADlzcAA5M69AMi//ADlz78A6dbLANHK/QDq18wA6tjNAOzaywDr2dAA1c/+AOzbzwDW0/8A7t/UAO7f1QDb1v4A7uDWAO7h1gDb2P8A7+HaAO7i1wDx49gA9+nTAOLg/wDz6OEA5eP/APTr5AD17OUA9e7oAPbu6QDt6v0A+PHvAPb0/wD59/8A+vv/APz8/wD+/v8A///+AP///wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAY2NjY2M2JCknO1VjY2NjY2NjY2NPFSsqHSYhVWNjY2NjY2NjQC1bPDglG1VjY2NjY2NjY0oLEgwcNBtVY2NjY2NjY2NQBgENUiwUVWNjY2NjY2NjTQQIUV4RE1VjY2NjY2NjY0wFNWJBFyhVY2NjY2NjY2NDI2JgS1xiVWNjY2NjY2NjRz9iYjA6RlVjY2NjY2NjY0k5Yl0PLiBVY2NjY2NjY2NYWWJcIjEaVWNjY2NjY2NjQjJiYl8vFlVjY2NjY2NjY0UQVmFIDhlVY2NjY2NjY2NJAgk3MwMYVWNjY2NjY2NjVwoAH04HHlVjY2NjY2NjY2NUPURaPlNjY2NjY/gfAADwDwAQ8A8AAPAPAADwDwAA8A/AIvAPAADwDwAA8A8AAPAPQDbwDwAA8A8AAPAPAADwDwB08A8AAPgfAAA="
 
 /***/ },
-/* 383 */
+/* 317 */
 /***/ function(module, exports) {
 
 	// removed by extract-text-webpack-plugin
-
-/***/ },
-/* 384 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var require;var require;/* WEBPACK VAR INJECTION */(function(global) {/*
-	  html2canvas 0.5.0-beta4 <http://html2canvas.hertzen.com>
-	  Copyright (c) 2016 Niklas von Hertzen
-
-	  Released under  License
-	*/
-
-	(function(f){if(true){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.html2canvas = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return require(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
-	(function (global){
-	/*! https://mths.be/punycode v1.4.0 by @mathias */
-	;(function(root) {
-
-		/** Detect free variables */
-		var freeExports = typeof exports == 'object' && exports &&
-			!exports.nodeType && exports;
-		var freeModule = typeof module == 'object' && module &&
-			!module.nodeType && module;
-		var freeGlobal = typeof global == 'object' && global;
-		if (
-			freeGlobal.global === freeGlobal ||
-			freeGlobal.window === freeGlobal ||
-			freeGlobal.self === freeGlobal
-		) {
-			root = freeGlobal;
-		}
-
-		/**
-		 * The `punycode` object.
-		 * @name punycode
-		 * @type Object
-		 */
-		var punycode,
-
-		/** Highest positive signed 32-bit float value */
-		maxInt = 2147483647, // aka. 0x7FFFFFFF or 2^31-1
-
-		/** Bootstring parameters */
-		base = 36,
-		tMin = 1,
-		tMax = 26,
-		skew = 38,
-		damp = 700,
-		initialBias = 72,
-		initialN = 128, // 0x80
-		delimiter = '-', // '\x2D'
-
-		/** Regular expressions */
-		regexPunycode = /^xn--/,
-		regexNonASCII = /[^\x20-\x7E]/, // unprintable ASCII chars + non-ASCII chars
-		regexSeparators = /[\x2E\u3002\uFF0E\uFF61]/g, // RFC 3490 separators
-
-		/** Error messages */
-		errors = {
-			'overflow': 'Overflow: input needs wider integers to process',
-			'not-basic': 'Illegal input >= 0x80 (not a basic code point)',
-			'invalid-input': 'Invalid input'
-		},
-
-		/** Convenience shortcuts */
-		baseMinusTMin = base - tMin,
-		floor = Math.floor,
-		stringFromCharCode = String.fromCharCode,
-
-		/** Temporary variable */
-		key;
-
-		/*--------------------------------------------------------------------------*/
-
-		/**
-		 * A generic error utility function.
-		 * @private
-		 * @param {String} type The error type.
-		 * @returns {Error} Throws a `RangeError` with the applicable error message.
-		 */
-		function error(type) {
-			throw new RangeError(errors[type]);
-		}
-
-		/**
-		 * A generic `Array#map` utility function.
-		 * @private
-		 * @param {Array} array The array to iterate over.
-		 * @param {Function} callback The function that gets called for every array
-		 * item.
-		 * @returns {Array} A new array of values returned by the callback function.
-		 */
-		function map(array, fn) {
-			var length = array.length;
-			var result = [];
-			while (length--) {
-				result[length] = fn(array[length]);
-			}
-			return result;
-		}
-
-		/**
-		 * A simple `Array#map`-like wrapper to work with domain name strings or email
-		 * addresses.
-		 * @private
-		 * @param {String} domain The domain name or email address.
-		 * @param {Function} callback The function that gets called for every
-		 * character.
-		 * @returns {Array} A new string of characters returned by the callback
-		 * function.
-		 */
-		function mapDomain(string, fn) {
-			var parts = string.split('@');
-			var result = '';
-			if (parts.length > 1) {
-				// In email addresses, only the domain name should be punycoded. Leave
-				// the local part (i.e. everything up to `@`) intact.
-				result = parts[0] + '@';
-				string = parts[1];
-			}
-			// Avoid `split(regex)` for IE8 compatibility. See #17.
-			string = string.replace(regexSeparators, '\x2E');
-			var labels = string.split('.');
-			var encoded = map(labels, fn).join('.');
-			return result + encoded;
-		}
-
-		/**
-		 * Creates an array containing the numeric code points of each Unicode
-		 * character in the string. While JavaScript uses UCS-2 internally,
-		 * this function will convert a pair of surrogate halves (each of which
-		 * UCS-2 exposes as separate characters) into a single code point,
-		 * matching UTF-16.
-		 * @see `punycode.ucs2.encode`
-		 * @see <https://mathiasbynens.be/notes/javascript-encoding>
-		 * @memberOf punycode.ucs2
-		 * @name decode
-		 * @param {String} string The Unicode input string (UCS-2).
-		 * @returns {Array} The new array of code points.
-		 */
-		function ucs2decode(string) {
-			var output = [],
-			    counter = 0,
-			    length = string.length,
-			    value,
-			    extra;
-			while (counter < length) {
-				value = string.charCodeAt(counter++);
-				if (value >= 0xD800 && value <= 0xDBFF && counter < length) {
-					// high surrogate, and there is a next character
-					extra = string.charCodeAt(counter++);
-					if ((extra & 0xFC00) == 0xDC00) { // low surrogate
-						output.push(((value & 0x3FF) << 10) + (extra & 0x3FF) + 0x10000);
-					} else {
-						// unmatched surrogate; only append this code unit, in case the next
-						// code unit is the high surrogate of a surrogate pair
-						output.push(value);
-						counter--;
-					}
-				} else {
-					output.push(value);
-				}
-			}
-			return output;
-		}
-
-		/**
-		 * Creates a string based on an array of numeric code points.
-		 * @see `punycode.ucs2.decode`
-		 * @memberOf punycode.ucs2
-		 * @name encode
-		 * @param {Array} codePoints The array of numeric code points.
-		 * @returns {String} The new Unicode string (UCS-2).
-		 */
-		function ucs2encode(array) {
-			return map(array, function(value) {
-				var output = '';
-				if (value > 0xFFFF) {
-					value -= 0x10000;
-					output += stringFromCharCode(value >>> 10 & 0x3FF | 0xD800);
-					value = 0xDC00 | value & 0x3FF;
-				}
-				output += stringFromCharCode(value);
-				return output;
-			}).join('');
-		}
-
-		/**
-		 * Converts a basic code point into a digit/integer.
-		 * @see `digitToBasic()`
-		 * @private
-		 * @param {Number} codePoint The basic numeric code point value.
-		 * @returns {Number} The numeric value of a basic code point (for use in
-		 * representing integers) in the range `0` to `base - 1`, or `base` if
-		 * the code point does not represent a value.
-		 */
-		function basicToDigit(codePoint) {
-			if (codePoint - 48 < 10) {
-				return codePoint - 22;
-			}
-			if (codePoint - 65 < 26) {
-				return codePoint - 65;
-			}
-			if (codePoint - 97 < 26) {
-				return codePoint - 97;
-			}
-			return base;
-		}
-
-		/**
-		 * Converts a digit/integer into a basic code point.
-		 * @see `basicToDigit()`
-		 * @private
-		 * @param {Number} digit The numeric value of a basic code point.
-		 * @returns {Number} The basic code point whose value (when used for
-		 * representing integers) is `digit`, which needs to be in the range
-		 * `0` to `base - 1`. If `flag` is non-zero, the uppercase form is
-		 * used; else, the lowercase form is used. The behavior is undefined
-		 * if `flag` is non-zero and `digit` has no uppercase form.
-		 */
-		function digitToBasic(digit, flag) {
-			//  0..25 map to ASCII a..z or A..Z
-			// 26..35 map to ASCII 0..9
-			return digit + 22 + 75 * (digit < 26) - ((flag != 0) << 5);
-		}
-
-		/**
-		 * Bias adaptation function as per section 3.4 of RFC 3492.
-		 * https://tools.ietf.org/html/rfc3492#section-3.4
-		 * @private
-		 */
-		function adapt(delta, numPoints, firstTime) {
-			var k = 0;
-			delta = firstTime ? floor(delta / damp) : delta >> 1;
-			delta += floor(delta / numPoints);
-			for (/* no initialization */; delta > baseMinusTMin * tMax >> 1; k += base) {
-				delta = floor(delta / baseMinusTMin);
-			}
-			return floor(k + (baseMinusTMin + 1) * delta / (delta + skew));
-		}
-
-		/**
-		 * Converts a Punycode string of ASCII-only symbols to a string of Unicode
-		 * symbols.
-		 * @memberOf punycode
-		 * @param {String} input The Punycode string of ASCII-only symbols.
-		 * @returns {String} The resulting string of Unicode symbols.
-		 */
-		function decode(input) {
-			// Don't use UCS-2
-			var output = [],
-			    inputLength = input.length,
-			    out,
-			    i = 0,
-			    n = initialN,
-			    bias = initialBias,
-			    basic,
-			    j,
-			    index,
-			    oldi,
-			    w,
-			    k,
-			    digit,
-			    t,
-			    /** Cached calculation results */
-			    baseMinusT;
-
-			// Handle the basic code points: let `basic` be the number of input code
-			// points before the last delimiter, or `0` if there is none, then copy
-			// the first basic code points to the output.
-
-			basic = input.lastIndexOf(delimiter);
-			if (basic < 0) {
-				basic = 0;
-			}
-
-			for (j = 0; j < basic; ++j) {
-				// if it's not a basic code point
-				if (input.charCodeAt(j) >= 0x80) {
-					error('not-basic');
-				}
-				output.push(input.charCodeAt(j));
-			}
-
-			// Main decoding loop: start just after the last delimiter if any basic code
-			// points were copied; start at the beginning otherwise.
-
-			for (index = basic > 0 ? basic + 1 : 0; index < inputLength; /* no final expression */) {
-
-				// `index` is the index of the next character to be consumed.
-				// Decode a generalized variable-length integer into `delta`,
-				// which gets added to `i`. The overflow checking is easier
-				// if we increase `i` as we go, then subtract off its starting
-				// value at the end to obtain `delta`.
-				for (oldi = i, w = 1, k = base; /* no condition */; k += base) {
-
-					if (index >= inputLength) {
-						error('invalid-input');
-					}
-
-					digit = basicToDigit(input.charCodeAt(index++));
-
-					if (digit >= base || digit > floor((maxInt - i) / w)) {
-						error('overflow');
-					}
-
-					i += digit * w;
-					t = k <= bias ? tMin : (k >= bias + tMax ? tMax : k - bias);
-
-					if (digit < t) {
-						break;
-					}
-
-					baseMinusT = base - t;
-					if (w > floor(maxInt / baseMinusT)) {
-						error('overflow');
-					}
-
-					w *= baseMinusT;
-
-				}
-
-				out = output.length + 1;
-				bias = adapt(i - oldi, out, oldi == 0);
-
-				// `i` was supposed to wrap around from `out` to `0`,
-				// incrementing `n` each time, so we'll fix that now:
-				if (floor(i / out) > maxInt - n) {
-					error('overflow');
-				}
-
-				n += floor(i / out);
-				i %= out;
-
-				// Insert `n` at position `i` of the output
-				output.splice(i++, 0, n);
-
-			}
-
-			return ucs2encode(output);
-		}
-
-		/**
-		 * Converts a string of Unicode symbols (e.g. a domain name label) to a
-		 * Punycode string of ASCII-only symbols.
-		 * @memberOf punycode
-		 * @param {String} input The string of Unicode symbols.
-		 * @returns {String} The resulting Punycode string of ASCII-only symbols.
-		 */
-		function encode(input) {
-			var n,
-			    delta,
-			    handledCPCount,
-			    basicLength,
-			    bias,
-			    j,
-			    m,
-			    q,
-			    k,
-			    t,
-			    currentValue,
-			    output = [],
-			    /** `inputLength` will hold the number of code points in `input`. */
-			    inputLength,
-			    /** Cached calculation results */
-			    handledCPCountPlusOne,
-			    baseMinusT,
-			    qMinusT;
-
-			// Convert the input in UCS-2 to Unicode
-			input = ucs2decode(input);
-
-			// Cache the length
-			inputLength = input.length;
-
-			// Initialize the state
-			n = initialN;
-			delta = 0;
-			bias = initialBias;
-
-			// Handle the basic code points
-			for (j = 0; j < inputLength; ++j) {
-				currentValue = input[j];
-				if (currentValue < 0x80) {
-					output.push(stringFromCharCode(currentValue));
-				}
-			}
-
-			handledCPCount = basicLength = output.length;
-
-			// `handledCPCount` is the number of code points that have been handled;
-			// `basicLength` is the number of basic code points.
-
-			// Finish the basic string - if it is not empty - with a delimiter
-			if (basicLength) {
-				output.push(delimiter);
-			}
-
-			// Main encoding loop:
-			while (handledCPCount < inputLength) {
-
-				// All non-basic code points < n have been handled already. Find the next
-				// larger one:
-				for (m = maxInt, j = 0; j < inputLength; ++j) {
-					currentValue = input[j];
-					if (currentValue >= n && currentValue < m) {
-						m = currentValue;
-					}
-				}
-
-				// Increase `delta` enough to advance the decoder's <n,i> state to <m,0>,
-				// but guard against overflow
-				handledCPCountPlusOne = handledCPCount + 1;
-				if (m - n > floor((maxInt - delta) / handledCPCountPlusOne)) {
-					error('overflow');
-				}
-
-				delta += (m - n) * handledCPCountPlusOne;
-				n = m;
-
-				for (j = 0; j < inputLength; ++j) {
-					currentValue = input[j];
-
-					if (currentValue < n && ++delta > maxInt) {
-						error('overflow');
-					}
-
-					if (currentValue == n) {
-						// Represent delta as a generalized variable-length integer
-						for (q = delta, k = base; /* no condition */; k += base) {
-							t = k <= bias ? tMin : (k >= bias + tMax ? tMax : k - bias);
-							if (q < t) {
-								break;
-							}
-							qMinusT = q - t;
-							baseMinusT = base - t;
-							output.push(
-								stringFromCharCode(digitToBasic(t + qMinusT % baseMinusT, 0))
-							);
-							q = floor(qMinusT / baseMinusT);
-						}
-
-						output.push(stringFromCharCode(digitToBasic(q, 0)));
-						bias = adapt(delta, handledCPCountPlusOne, handledCPCount == basicLength);
-						delta = 0;
-						++handledCPCount;
-					}
-				}
-
-				++delta;
-				++n;
-
-			}
-			return output.join('');
-		}
-
-		/**
-		 * Converts a Punycode string representing a domain name or an email address
-		 * to Unicode. Only the Punycoded parts of the input will be converted, i.e.
-		 * it doesn't matter if you call it on a string that has already been
-		 * converted to Unicode.
-		 * @memberOf punycode
-		 * @param {String} input The Punycoded domain name or email address to
-		 * convert to Unicode.
-		 * @returns {String} The Unicode representation of the given Punycode
-		 * string.
-		 */
-		function toUnicode(input) {
-			return mapDomain(input, function(string) {
-				return regexPunycode.test(string)
-					? decode(string.slice(4).toLowerCase())
-					: string;
-			});
-		}
-
-		/**
-		 * Converts a Unicode string representing a domain name or an email address to
-		 * Punycode. Only the non-ASCII parts of the domain name will be converted,
-		 * i.e. it doesn't matter if you call it with a domain that's already in
-		 * ASCII.
-		 * @memberOf punycode
-		 * @param {String} input The domain name or email address to convert, as a
-		 * Unicode string.
-		 * @returns {String} The Punycode representation of the given domain name or
-		 * email address.
-		 */
-		function toASCII(input) {
-			return mapDomain(input, function(string) {
-				return regexNonASCII.test(string)
-					? 'xn--' + encode(string)
-					: string;
-			});
-		}
-
-		/*--------------------------------------------------------------------------*/
-
-		/** Define the public API */
-		punycode = {
-			/**
-			 * A string representing the current Punycode.js version number.
-			 * @memberOf punycode
-			 * @type String
-			 */
-			'version': '1.3.2',
-			/**
-			 * An object of methods to convert from JavaScript's internal character
-			 * representation (UCS-2) to Unicode code points, and back.
-			 * @see <https://mathiasbynens.be/notes/javascript-encoding>
-			 * @memberOf punycode
-			 * @type Object
-			 */
-			'ucs2': {
-				'decode': ucs2decode,
-				'encode': ucs2encode
-			},
-			'decode': decode,
-			'encode': encode,
-			'toASCII': toASCII,
-			'toUnicode': toUnicode
-		};
-
-		/** Expose `punycode` */
-		// Some AMD build optimizers, like r.js, check for specific condition patterns
-		// like the following:
-		if (
-			typeof define == 'function' &&
-			typeof define.amd == 'object' &&
-			define.amd
-		) {
-			define('punycode', function() {
-				return punycode;
-			});
-		} else if (freeExports && freeModule) {
-			if (module.exports == freeExports) {
-				// in Node.js, io.js, or RingoJS v0.8.0+
-				freeModule.exports = punycode;
-			} else {
-				// in Narwhal or RingoJS v0.7.0-
-				for (key in punycode) {
-					punycode.hasOwnProperty(key) && (freeExports[key] = punycode[key]);
-				}
-			}
-		} else {
-			// in Rhino or a web browser
-			root.punycode = punycode;
-		}
-
-	}(this));
-
-	}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-	},{}],2:[function(_dereq_,module,exports){
-	var log = _dereq_('./log');
-
-	function restoreOwnerScroll(ownerDocument, x, y) {
-	    if (ownerDocument.defaultView && (x !== ownerDocument.defaultView.pageXOffset || y !== ownerDocument.defaultView.pageYOffset)) {
-	        ownerDocument.defaultView.scrollTo(x, y);
-	    }
-	}
-
-	function cloneCanvasContents(canvas, clonedCanvas) {
-	    try {
-	        if (clonedCanvas) {
-	            clonedCanvas.width = canvas.width;
-	            clonedCanvas.height = canvas.height;
-	            clonedCanvas.getContext("2d").putImageData(canvas.getContext("2d").getImageData(0, 0, canvas.width, canvas.height), 0, 0);
-	        }
-	    } catch(e) {
-	        log("Unable to copy canvas content from", canvas, e);
-	    }
-	}
-
-	function cloneNode(node, javascriptEnabled) {
-	    var clone = node.nodeType === 3 ? document.createTextNode(node.nodeValue) : node.cloneNode(false);
-
-	    var child = node.firstChild;
-	    while(child) {
-	        if (javascriptEnabled === true || child.nodeType !== 1 || child.nodeName !== 'SCRIPT') {
-	            clone.appendChild(cloneNode(child, javascriptEnabled));
-	        }
-	        child = child.nextSibling;
-	    }
-
-	    if (node.nodeType === 1) {
-	        clone._scrollTop = node.scrollTop;
-	        clone._scrollLeft = node.scrollLeft;
-	        if (node.nodeName === "CANVAS") {
-	            cloneCanvasContents(node, clone);
-	        } else if (node.nodeName === "TEXTAREA" || node.nodeName === "SELECT") {
-	            clone.value = node.value;
-	        }
-	    }
-
-	    return clone;
-	}
-
-	function initNode(node) {
-	    if (node.nodeType === 1) {
-	        node.scrollTop = node._scrollTop;
-	        node.scrollLeft = node._scrollLeft;
-
-	        var child = node.firstChild;
-	        while(child) {
-	            initNode(child);
-	            child = child.nextSibling;
-	        }
-	    }
-	}
-
-	module.exports = function(ownerDocument, containerDocument, width, height, options, x ,y) {
-	    var documentElement = cloneNode(ownerDocument.documentElement, options.javascriptEnabled);
-	    var container = containerDocument.createElement("iframe");
-
-	    container.className = "html2canvas-container";
-	    container.style.visibility = "hidden";
-	    container.style.position = "fixed";
-	    container.style.left = "-10000px";
-	    container.style.top = "0px";
-	    container.style.border = "0";
-	    container.width = width;
-	    container.height = height;
-	    container.scrolling = "no"; // ios won't scroll without it
-	    containerDocument.body.appendChild(container);
-
-	    return new Promise(function(resolve) {
-	        var documentClone = container.contentWindow.document;
-
-	        /* Chrome doesn't detect relative background-images assigned in inline <style> sheets when fetched through getComputedStyle
-	         if window url is about:blank, we can assign the url to current by writing onto the document
-	         */
-	        container.contentWindow.onload = container.onload = function() {
-	            var interval = setInterval(function() {
-	                if (documentClone.body.childNodes.length > 0) {
-	                    initNode(documentClone.documentElement);
-	                    clearInterval(interval);
-	                    if (options.type === "view") {
-	                        container.contentWindow.scrollTo(x, y);
-	                        if ((/(iPad|iPhone|iPod)/g).test(navigator.userAgent) && (container.contentWindow.scrollY !== y || container.contentWindow.scrollX !== x)) {
-	                            documentClone.documentElement.style.top = (-y) + "px";
-	                            documentClone.documentElement.style.left = (-x) + "px";
-	                            documentClone.documentElement.style.position = 'absolute';
-	                        }
-	                    }
-	                    resolve(container);
-	                }
-	            }, 50);
-	        };
-
-	        documentClone.open();
-	        documentClone.write("<!DOCTYPE html><html></html>");
-	        // Chrome scrolls the parent document for some reason after the write to the cloned window???
-	        restoreOwnerScroll(ownerDocument, x, y);
-	        documentClone.replaceChild(documentClone.adoptNode(documentElement), documentClone.documentElement);
-	        documentClone.close();
-	    });
-	};
-
-	},{"./log":13}],3:[function(_dereq_,module,exports){
-	// http://dev.w3.org/csswg/css-color/
-
-	function Color(value) {
-	    this.r = 0;
-	    this.g = 0;
-	    this.b = 0;
-	    this.a = null;
-	    var result = this.fromArray(value) ||
-	        this.namedColor(value) ||
-	        this.rgb(value) ||
-	        this.rgba(value) ||
-	        this.hex6(value) ||
-	        this.hex3(value);
-	}
-
-	Color.prototype.darken = function(amount) {
-	    var a = 1 - amount;
-	    return  new Color([
-	        Math.round(this.r * a),
-	        Math.round(this.g * a),
-	        Math.round(this.b * a),
-	        this.a
-	    ]);
-	};
-
-	Color.prototype.isTransparent = function() {
-	    return this.a === 0;
-	};
-
-	Color.prototype.isBlack = function() {
-	    return this.r === 0 && this.g === 0 && this.b === 0;
-	};
-
-	Color.prototype.fromArray = function(array) {
-	    if (Array.isArray(array)) {
-	        this.r = Math.min(array[0], 255);
-	        this.g = Math.min(array[1], 255);
-	        this.b = Math.min(array[2], 255);
-	        if (array.length > 3) {
-	            this.a = array[3];
-	        }
-	    }
-
-	    return (Array.isArray(array));
-	};
-
-	var _hex3 = /^#([a-f0-9]{3})$/i;
-
-	Color.prototype.hex3 = function(value) {
-	    var match = null;
-	    if ((match = value.match(_hex3)) !== null) {
-	        this.r = parseInt(match[1][0] + match[1][0], 16);
-	        this.g = parseInt(match[1][1] + match[1][1], 16);
-	        this.b = parseInt(match[1][2] + match[1][2], 16);
-	    }
-	    return match !== null;
-	};
-
-	var _hex6 = /^#([a-f0-9]{6})$/i;
-
-	Color.prototype.hex6 = function(value) {
-	    var match = null;
-	    if ((match = value.match(_hex6)) !== null) {
-	        this.r = parseInt(match[1].substring(0, 2), 16);
-	        this.g = parseInt(match[1].substring(2, 4), 16);
-	        this.b = parseInt(match[1].substring(4, 6), 16);
-	    }
-	    return match !== null;
-	};
-
-
-	var _rgb = /^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/;
-
-	Color.prototype.rgb = function(value) {
-	    var match = null;
-	    if ((match = value.match(_rgb)) !== null) {
-	        this.r = Number(match[1]);
-	        this.g = Number(match[2]);
-	        this.b = Number(match[3]);
-	    }
-	    return match !== null;
-	};
-
-	var _rgba = /^rgba\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d?\.?\d+)\s*\)$/;
-
-	Color.prototype.rgba = function(value) {
-	    var match = null;
-	    if ((match = value.match(_rgba)) !== null) {
-	        this.r = Number(match[1]);
-	        this.g = Number(match[2]);
-	        this.b = Number(match[3]);
-	        this.a = Number(match[4]);
-	    }
-	    return match !== null;
-	};
-
-	Color.prototype.toString = function() {
-	    return this.a !== null && this.a !== 1 ?
-	    "rgba(" + [this.r, this.g, this.b, this.a].join(",") + ")" :
-	    "rgb(" + [this.r, this.g, this.b].join(",") + ")";
-	};
-
-	Color.prototype.namedColor = function(value) {
-	    value = value.toLowerCase();
-	    var color = colors[value];
-	    if (color) {
-	        this.r = color[0];
-	        this.g = color[1];
-	        this.b = color[2];
-	    } else if (value === "transparent") {
-	        this.r = this.g = this.b = this.a = 0;
-	        return true;
-	    }
-
-	    return !!color;
-	};
-
-	Color.prototype.isColor = true;
-
-	// JSON.stringify([].slice.call($$('.named-color-table tr'), 1).map(function(row) { return [row.childNodes[3].textContent, row.childNodes[5].textContent.trim().split(",").map(Number)] }).reduce(function(data, row) {data[row[0]] = row[1]; return data}, {}))
-	var colors = {
-	    "aliceblue": [240, 248, 255],
-	    "antiquewhite": [250, 235, 215],
-	    "aqua": [0, 255, 255],
-	    "aquamarine": [127, 255, 212],
-	    "azure": [240, 255, 255],
-	    "beige": [245, 245, 220],
-	    "bisque": [255, 228, 196],
-	    "black": [0, 0, 0],
-	    "blanchedalmond": [255, 235, 205],
-	    "blue": [0, 0, 255],
-	    "blueviolet": [138, 43, 226],
-	    "brown": [165, 42, 42],
-	    "burlywood": [222, 184, 135],
-	    "cadetblue": [95, 158, 160],
-	    "chartreuse": [127, 255, 0],
-	    "chocolate": [210, 105, 30],
-	    "coral": [255, 127, 80],
-	    "cornflowerblue": [100, 149, 237],
-	    "cornsilk": [255, 248, 220],
-	    "crimson": [220, 20, 60],
-	    "cyan": [0, 255, 255],
-	    "darkblue": [0, 0, 139],
-	    "darkcyan": [0, 139, 139],
-	    "darkgoldenrod": [184, 134, 11],
-	    "darkgray": [169, 169, 169],
-	    "darkgreen": [0, 100, 0],
-	    "darkgrey": [169, 169, 169],
-	    "darkkhaki": [189, 183, 107],
-	    "darkmagenta": [139, 0, 139],
-	    "darkolivegreen": [85, 107, 47],
-	    "darkorange": [255, 140, 0],
-	    "darkorchid": [153, 50, 204],
-	    "darkred": [139, 0, 0],
-	    "darksalmon": [233, 150, 122],
-	    "darkseagreen": [143, 188, 143],
-	    "darkslateblue": [72, 61, 139],
-	    "darkslategray": [47, 79, 79],
-	    "darkslategrey": [47, 79, 79],
-	    "darkturquoise": [0, 206, 209],
-	    "darkviolet": [148, 0, 211],
-	    "deeppink": [255, 20, 147],
-	    "deepskyblue": [0, 191, 255],
-	    "dimgray": [105, 105, 105],
-	    "dimgrey": [105, 105, 105],
-	    "dodgerblue": [30, 144, 255],
-	    "firebrick": [178, 34, 34],
-	    "floralwhite": [255, 250, 240],
-	    "forestgreen": [34, 139, 34],
-	    "fuchsia": [255, 0, 255],
-	    "gainsboro": [220, 220, 220],
-	    "ghostwhite": [248, 248, 255],
-	    "gold": [255, 215, 0],
-	    "goldenrod": [218, 165, 32],
-	    "gray": [128, 128, 128],
-	    "green": [0, 128, 0],
-	    "greenyellow": [173, 255, 47],
-	    "grey": [128, 128, 128],
-	    "honeydew": [240, 255, 240],
-	    "hotpink": [255, 105, 180],
-	    "indianred": [205, 92, 92],
-	    "indigo": [75, 0, 130],
-	    "ivory": [255, 255, 240],
-	    "khaki": [240, 230, 140],
-	    "lavender": [230, 230, 250],
-	    "lavenderblush": [255, 240, 245],
-	    "lawngreen": [124, 252, 0],
-	    "lemonchiffon": [255, 250, 205],
-	    "lightblue": [173, 216, 230],
-	    "lightcoral": [240, 128, 128],
-	    "lightcyan": [224, 255, 255],
-	    "lightgoldenrodyellow": [250, 250, 210],
-	    "lightgray": [211, 211, 211],
-	    "lightgreen": [144, 238, 144],
-	    "lightgrey": [211, 211, 211],
-	    "lightpink": [255, 182, 193],
-	    "lightsalmon": [255, 160, 122],
-	    "lightseagreen": [32, 178, 170],
-	    "lightskyblue": [135, 206, 250],
-	    "lightslategray": [119, 136, 153],
-	    "lightslategrey": [119, 136, 153],
-	    "lightsteelblue": [176, 196, 222],
-	    "lightyellow": [255, 255, 224],
-	    "lime": [0, 255, 0],
-	    "limegreen": [50, 205, 50],
-	    "linen": [250, 240, 230],
-	    "magenta": [255, 0, 255],
-	    "maroon": [128, 0, 0],
-	    "mediumaquamarine": [102, 205, 170],
-	    "mediumblue": [0, 0, 205],
-	    "mediumorchid": [186, 85, 211],
-	    "mediumpurple": [147, 112, 219],
-	    "mediumseagreen": [60, 179, 113],
-	    "mediumslateblue": [123, 104, 238],
-	    "mediumspringgreen": [0, 250, 154],
-	    "mediumturquoise": [72, 209, 204],
-	    "mediumvioletred": [199, 21, 133],
-	    "midnightblue": [25, 25, 112],
-	    "mintcream": [245, 255, 250],
-	    "mistyrose": [255, 228, 225],
-	    "moccasin": [255, 228, 181],
-	    "navajowhite": [255, 222, 173],
-	    "navy": [0, 0, 128],
-	    "oldlace": [253, 245, 230],
-	    "olive": [128, 128, 0],
-	    "olivedrab": [107, 142, 35],
-	    "orange": [255, 165, 0],
-	    "orangered": [255, 69, 0],
-	    "orchid": [218, 112, 214],
-	    "palegoldenrod": [238, 232, 170],
-	    "palegreen": [152, 251, 152],
-	    "paleturquoise": [175, 238, 238],
-	    "palevioletred": [219, 112, 147],
-	    "papayawhip": [255, 239, 213],
-	    "peachpuff": [255, 218, 185],
-	    "peru": [205, 133, 63],
-	    "pink": [255, 192, 203],
-	    "plum": [221, 160, 221],
-	    "powderblue": [176, 224, 230],
-	    "purple": [128, 0, 128],
-	    "rebeccapurple": [102, 51, 153],
-	    "red": [255, 0, 0],
-	    "rosybrown": [188, 143, 143],
-	    "royalblue": [65, 105, 225],
-	    "saddlebrown": [139, 69, 19],
-	    "salmon": [250, 128, 114],
-	    "sandybrown": [244, 164, 96],
-	    "seagreen": [46, 139, 87],
-	    "seashell": [255, 245, 238],
-	    "sienna": [160, 82, 45],
-	    "silver": [192, 192, 192],
-	    "skyblue": [135, 206, 235],
-	    "slateblue": [106, 90, 205],
-	    "slategray": [112, 128, 144],
-	    "slategrey": [112, 128, 144],
-	    "snow": [255, 250, 250],
-	    "springgreen": [0, 255, 127],
-	    "steelblue": [70, 130, 180],
-	    "tan": [210, 180, 140],
-	    "teal": [0, 128, 128],
-	    "thistle": [216, 191, 216],
-	    "tomato": [255, 99, 71],
-	    "turquoise": [64, 224, 208],
-	    "violet": [238, 130, 238],
-	    "wheat": [245, 222, 179],
-	    "white": [255, 255, 255],
-	    "whitesmoke": [245, 245, 245],
-	    "yellow": [255, 255, 0],
-	    "yellowgreen": [154, 205, 50]
-	};
-
-	module.exports = Color;
-
-	},{}],4:[function(_dereq_,module,exports){
-	var Support = _dereq_('./support');
-	var CanvasRenderer = _dereq_('./renderers/canvas');
-	var ImageLoader = _dereq_('./imageloader');
-	var NodeParser = _dereq_('./nodeparser');
-	var NodeContainer = _dereq_('./nodecontainer');
-	var log = _dereq_('./log');
-	var utils = _dereq_('./utils');
-	var createWindowClone = _dereq_('./clone');
-	var loadUrlDocument = _dereq_('./proxy').loadUrlDocument;
-	var getBounds = utils.getBounds;
-
-	var html2canvasNodeAttribute = "data-html2canvas-node";
-	var html2canvasCloneIndex = 0;
-
-	function html2canvas(nodeList, options) {
-	    var index = html2canvasCloneIndex++;
-	    options = options || {};
-	    if (options.logging) {
-	        log.options.logging = true;
-	        log.options.start = Date.now();
-	    }
-
-	    options.async = typeof(options.async) === "undefined" ? true : options.async;
-	    options.allowTaint = typeof(options.allowTaint) === "undefined" ? false : options.allowTaint;
-	    options.removeContainer = typeof(options.removeContainer) === "undefined" ? true : options.removeContainer;
-	    options.javascriptEnabled = typeof(options.javascriptEnabled) === "undefined" ? false : options.javascriptEnabled;
-	    options.imageTimeout = typeof(options.imageTimeout) === "undefined" ? 10000 : options.imageTimeout;
-	    options.renderer = typeof(options.renderer) === "function" ? options.renderer : CanvasRenderer;
-	    options.strict = !!options.strict;
-
-	    if (typeof(nodeList) === "string") {
-	        if (typeof(options.proxy) !== "string") {
-	            return Promise.reject("Proxy must be used when rendering url");
-	        }
-	        var width = options.width != null ? options.width : window.innerWidth;
-	        var height = options.height != null ? options.height : window.innerHeight;
-	        return loadUrlDocument(absoluteUrl(nodeList), options.proxy, document, width, height, options).then(function(container) {
-	            return renderWindow(container.contentWindow.document.documentElement, container, options, width, height);
-	        });
-	    }
-
-	    var node = ((nodeList === undefined) ? [document.documentElement] : ((nodeList.length) ? nodeList : [nodeList]))[0];
-	    node.setAttribute(html2canvasNodeAttribute + index, index);
-	    return renderDocument(node.ownerDocument, options, node.ownerDocument.defaultView.innerWidth, node.ownerDocument.defaultView.innerHeight, index).then(function(canvas) {
-	        if (typeof(options.onrendered) === "function") {
-	            log("options.onrendered is deprecated, html2canvas returns a Promise containing the canvas");
-	            options.onrendered(canvas);
-	        }
-	        return canvas;
-	    });
-	}
-
-	html2canvas.CanvasRenderer = CanvasRenderer;
-	html2canvas.NodeContainer = NodeContainer;
-	html2canvas.log = log;
-	html2canvas.utils = utils;
-
-	var html2canvasExport = (typeof(document) === "undefined" || typeof(Object.create) !== "function" || typeof(document.createElement("canvas").getContext) !== "function") ? function() {
-	    return Promise.reject("No canvas support");
-	} : html2canvas;
-
-	module.exports = html2canvasExport;
-
-	if (typeof(define) === 'function' && define.amd) {
-	    define('html2canvas', [], function() {
-	        return html2canvasExport;
-	    });
-	}
-
-	function renderDocument(document, options, windowWidth, windowHeight, html2canvasIndex) {
-	    return createWindowClone(document, document, windowWidth, windowHeight, options, document.defaultView.pageXOffset, document.defaultView.pageYOffset).then(function(container) {
-	        log("Document cloned");
-	        var attributeName = html2canvasNodeAttribute + html2canvasIndex;
-	        var selector = "[" + attributeName + "='" + html2canvasIndex + "']";
-	        document.querySelector(selector).removeAttribute(attributeName);
-	        var clonedWindow = container.contentWindow;
-	        var node = clonedWindow.document.querySelector(selector);
-	        var oncloneHandler = (typeof(options.onclone) === "function") ? Promise.resolve(options.onclone(clonedWindow.document)) : Promise.resolve(true);
-	        return oncloneHandler.then(function() {
-	            return renderWindow(node, container, options, windowWidth, windowHeight);
-	        });
-	    });
-	}
-
-	function renderWindow(node, container, options, windowWidth, windowHeight) {
-	    var clonedWindow = container.contentWindow;
-	    var support = new Support(clonedWindow.document);
-	    var imageLoader = new ImageLoader(options, support);
-	    var bounds = getBounds(node);
-	    var width = options.type === "view" ? windowWidth : documentWidth(clonedWindow.document);
-	    var height = options.type === "view" ? windowHeight : documentHeight(clonedWindow.document);
-	    var renderer = new options.renderer(width, height, imageLoader, options, document);
-	    var parser = new NodeParser(node, renderer, support, imageLoader, options);
-	    return parser.ready.then(function() {
-	        log("Finished rendering");
-	        var canvas;
-
-	        if (options.type === "view") {
-	            canvas = crop(renderer.canvas, {width: renderer.canvas.width, height: renderer.canvas.height, top: 0, left: 0, x: 0, y: 0});
-	        } else if (node === clonedWindow.document.body || node === clonedWindow.document.documentElement || options.canvas != null) {
-	            canvas = renderer.canvas;
-	        } else {
-	            canvas = crop(renderer.canvas, {width:  options.width != null ? options.width : bounds.width, height: options.height != null ? options.height : bounds.height, top: bounds.top, left: bounds.left, x: 0, y: 0});
-	        }
-
-	        cleanupContainer(container, options);
-	        return canvas;
-	    });
-	}
-
-	function cleanupContainer(container, options) {
-	    if (options.removeContainer) {
-	        container.parentNode.removeChild(container);
-	        log("Cleaned up container");
-	    }
-	}
-
-	function crop(canvas, bounds) {
-	    var croppedCanvas = document.createElement("canvas");
-	    var x1 = Math.min(canvas.width - 1, Math.max(0, bounds.left));
-	    var x2 = Math.min(canvas.width, Math.max(1, bounds.left + bounds.width));
-	    var y1 = Math.min(canvas.height - 1, Math.max(0, bounds.top));
-	    var y2 = Math.min(canvas.height, Math.max(1, bounds.top + bounds.height));
-	    croppedCanvas.width = bounds.width;
-	    croppedCanvas.height =  bounds.height;
-	    var width = x2-x1;
-	    var height = y2-y1;
-	    log("Cropping canvas at:", "left:", bounds.left, "top:", bounds.top, "width:", width, "height:", height);
-	    log("Resulting crop with width", bounds.width, "and height", bounds.height, "with x", x1, "and y", y1);
-	    croppedCanvas.getContext("2d").drawImage(canvas, x1, y1, width, height, bounds.x, bounds.y, width, height);
-	    return croppedCanvas;
-	}
-
-	function documentWidth (doc) {
-	    return Math.max(
-	        Math.max(doc.body.scrollWidth, doc.documentElement.scrollWidth),
-	        Math.max(doc.body.offsetWidth, doc.documentElement.offsetWidth),
-	        Math.max(doc.body.clientWidth, doc.documentElement.clientWidth)
-	    );
-	}
-
-	function documentHeight (doc) {
-	    return Math.max(
-	        Math.max(doc.body.scrollHeight, doc.documentElement.scrollHeight),
-	        Math.max(doc.body.offsetHeight, doc.documentElement.offsetHeight),
-	        Math.max(doc.body.clientHeight, doc.documentElement.clientHeight)
-	    );
-	}
-
-	function absoluteUrl(url) {
-	    var link = document.createElement("a");
-	    link.href = url;
-	    link.href = link.href;
-	    return link;
-	}
-
-	},{"./clone":2,"./imageloader":11,"./log":13,"./nodecontainer":14,"./nodeparser":15,"./proxy":16,"./renderers/canvas":20,"./support":22,"./utils":26}],5:[function(_dereq_,module,exports){
-	var log = _dereq_('./log');
-	var smallImage = _dereq_('./utils').smallImage;
-
-	function DummyImageContainer(src) {
-	    this.src = src;
-	    log("DummyImageContainer for", src);
-	    if (!this.promise || !this.image) {
-	        log("Initiating DummyImageContainer");
-	        DummyImageContainer.prototype.image = new Image();
-	        var image = this.image;
-	        DummyImageContainer.prototype.promise = new Promise(function(resolve, reject) {
-	            image.onload = resolve;
-	            image.onerror = reject;
-	            image.src = smallImage();
-	            if (image.complete === true) {
-	                resolve(image);
-	            }
-	        });
-	    }
-	}
-
-	module.exports = DummyImageContainer;
-
-	},{"./log":13,"./utils":26}],6:[function(_dereq_,module,exports){
-	var smallImage = _dereq_('./utils').smallImage;
-
-	function Font(family, size) {
-	    var container = document.createElement('div'),
-	        img = document.createElement('img'),
-	        span = document.createElement('span'),
-	        sampleText = 'Hidden Text',
-	        baseline,
-	        middle;
-
-	    container.style.visibility = "hidden";
-	    container.style.fontFamily = family;
-	    container.style.fontSize = size;
-	    container.style.margin = 0;
-	    container.style.padding = 0;
-
-	    document.body.appendChild(container);
-
-	    img.src = smallImage();
-	    img.width = 1;
-	    img.height = 1;
-
-	    img.style.margin = 0;
-	    img.style.padding = 0;
-	    img.style.verticalAlign = "baseline";
-
-	    span.style.fontFamily = family;
-	    span.style.fontSize = size;
-	    span.style.margin = 0;
-	    span.style.padding = 0;
-
-	    span.appendChild(document.createTextNode(sampleText));
-	    container.appendChild(span);
-	    container.appendChild(img);
-	    baseline = (img.offsetTop - span.offsetTop) + 1;
-
-	    container.removeChild(span);
-	    container.appendChild(document.createTextNode(sampleText));
-
-	    container.style.lineHeight = "normal";
-	    img.style.verticalAlign = "super";
-
-	    middle = (img.offsetTop-container.offsetTop) + 1;
-
-	    document.body.removeChild(container);
-
-	    this.baseline = baseline;
-	    this.lineWidth = 1;
-	    this.middle = middle;
-	}
-
-	module.exports = Font;
-
-	},{"./utils":26}],7:[function(_dereq_,module,exports){
-	var Font = _dereq_('./font');
-
-	function FontMetrics() {
-	    this.data = {};
-	}
-
-	FontMetrics.prototype.getMetrics = function(family, size) {
-	    if (this.data[family + "-" + size] === undefined) {
-	        this.data[family + "-" + size] = new Font(family, size);
-	    }
-	    return this.data[family + "-" + size];
-	};
-
-	module.exports = FontMetrics;
-
-	},{"./font":6}],8:[function(_dereq_,module,exports){
-	var utils = _dereq_('./utils');
-	var getBounds = utils.getBounds;
-	var loadUrlDocument = _dereq_('./proxy').loadUrlDocument;
-
-	function FrameContainer(container, sameOrigin, options) {
-	    this.image = null;
-	    this.src = container;
-	    var self = this;
-	    var bounds = getBounds(container);
-	    this.promise = (!sameOrigin ? this.proxyLoad(options.proxy, bounds, options) : new Promise(function(resolve) {
-	        if (container.contentWindow.document.URL === "about:blank" || container.contentWindow.document.documentElement == null) {
-	            container.contentWindow.onload = container.onload = function() {
-	                resolve(container);
-	            };
-	        } else {
-	            resolve(container);
-	        }
-	    })).then(function(container) {
-	        var html2canvas = _dereq_('./core');
-	        return html2canvas(container.contentWindow.document.documentElement, {type: 'view', width: container.width, height: container.height, proxy: options.proxy, javascriptEnabled: options.javascriptEnabled, removeContainer: options.removeContainer, allowTaint: options.allowTaint, imageTimeout: options.imageTimeout / 2});
-	    }).then(function(canvas) {
-	        return self.image = canvas;
-	    });
-	}
-
-	FrameContainer.prototype.proxyLoad = function(proxy, bounds, options) {
-	    var container = this.src;
-	    return loadUrlDocument(container.src, proxy, container.ownerDocument, bounds.width, bounds.height, options);
-	};
-
-	module.exports = FrameContainer;
-
-	},{"./core":4,"./proxy":16,"./utils":26}],9:[function(_dereq_,module,exports){
-	function GradientContainer(imageData) {
-	    this.src = imageData.value;
-	    this.colorStops = [];
-	    this.type = null;
-	    this.x0 = 0.5;
-	    this.y0 = 0.5;
-	    this.x1 = 0.5;
-	    this.y1 = 0.5;
-	    this.promise = Promise.resolve(true);
-	}
-
-	GradientContainer.TYPES = {
-	    LINEAR: 1,
-	    RADIAL: 2
-	};
-
-	// TODO: support hsl[a], negative %/length values
-	// TODO: support <angle> (e.g. -?\d{1,3}(?:\.\d+)deg, etc. : https://developer.mozilla.org/docs/Web/CSS/angle )
-	GradientContainer.REGEXP_COLORSTOP = /^\s*(rgba?\(\s*\d{1,3},\s*\d{1,3},\s*\d{1,3}(?:,\s*[0-9\.]+)?\s*\)|[a-z]{3,20}|#[a-f0-9]{3,6})(?:\s+(\d{1,3}(?:\.\d+)?)(%|px)?)?(?:\s|$)/i;
-
-	module.exports = GradientContainer;
-
-	},{}],10:[function(_dereq_,module,exports){
-	function ImageContainer(src, cors) {
-	    this.src = src;
-	    this.image = new Image();
-	    var self = this;
-	    this.tainted = null;
-	    this.promise = new Promise(function(resolve, reject) {
-	        self.image.onload = resolve;
-	        self.image.onerror = reject;
-	        if (cors) {
-	            self.image.crossOrigin = "anonymous";
-	        }
-	        self.image.src = src;
-	        if (self.image.complete === true) {
-	            resolve(self.image);
-	        }
-	    });
-	}
-
-	module.exports = ImageContainer;
-
-	},{}],11:[function(_dereq_,module,exports){
-	var log = _dereq_('./log');
-	var ImageContainer = _dereq_('./imagecontainer');
-	var DummyImageContainer = _dereq_('./dummyimagecontainer');
-	var ProxyImageContainer = _dereq_('./proxyimagecontainer');
-	var FrameContainer = _dereq_('./framecontainer');
-	var SVGContainer = _dereq_('./svgcontainer');
-	var SVGNodeContainer = _dereq_('./svgnodecontainer');
-	var LinearGradientContainer = _dereq_('./lineargradientcontainer');
-	var WebkitGradientContainer = _dereq_('./webkitgradientcontainer');
-	var bind = _dereq_('./utils').bind;
-
-	function ImageLoader(options, support) {
-	    this.link = null;
-	    this.options = options;
-	    this.support = support;
-	    this.origin = this.getOrigin(window.location.href);
-	}
-
-	ImageLoader.prototype.findImages = function(nodes) {
-	    var images = [];
-	    nodes.reduce(function(imageNodes, container) {
-	        switch(container.node.nodeName) {
-	        case "IMG":
-	            return imageNodes.concat([{
-	                args: [container.node.src],
-	                method: "url"
-	            }]);
-	        case "svg":
-	        case "IFRAME":
-	            return imageNodes.concat([{
-	                args: [container.node],
-	                method: container.node.nodeName
-	            }]);
-	        }
-	        return imageNodes;
-	    }, []).forEach(this.addImage(images, this.loadImage), this);
-	    return images;
-	};
-
-	ImageLoader.prototype.findBackgroundImage = function(images, container) {
-	    container.parseBackgroundImages().filter(this.hasImageBackground).forEach(this.addImage(images, this.loadImage), this);
-	    return images;
-	};
-
-	ImageLoader.prototype.addImage = function(images, callback) {
-	    return function(newImage) {
-	        newImage.args.forEach(function(image) {
-	            if (!this.imageExists(images, image)) {
-	                images.splice(0, 0, callback.call(this, newImage));
-	                log('Added image #' + (images.length), typeof(image) === "string" ? image.substring(0, 100) : image);
-	            }
-	        }, this);
-	    };
-	};
-
-	ImageLoader.prototype.hasImageBackground = function(imageData) {
-	    return imageData.method !== "none";
-	};
-
-	ImageLoader.prototype.loadImage = function(imageData) {
-	    if (imageData.method === "url") {
-	        var src = imageData.args[0];
-	        if (this.isSVG(src) && !this.support.svg && !this.options.allowTaint) {
-	            return new SVGContainer(src);
-	        } else if (src.match(/data:image\/.*;base64,/i)) {
-	            return new ImageContainer(src.replace(/url\(['"]{0,}|['"]{0,}\)$/ig, ''), false);
-	        } else if (this.isSameOrigin(src) || this.options.allowTaint === true || this.isSVG(src)) {
-	            return new ImageContainer(src, false);
-	        } else if (this.support.cors && !this.options.allowTaint && this.options.useCORS) {
-	            return new ImageContainer(src, true);
-	        } else if (this.options.proxy) {
-	            return new ProxyImageContainer(src, this.options.proxy);
-	        } else {
-	            return new DummyImageContainer(src);
-	        }
-	    } else if (imageData.method === "linear-gradient") {
-	        return new LinearGradientContainer(imageData);
-	    } else if (imageData.method === "gradient") {
-	        return new WebkitGradientContainer(imageData);
-	    } else if (imageData.method === "svg") {
-	        return new SVGNodeContainer(imageData.args[0], this.support.svg);
-	    } else if (imageData.method === "IFRAME") {
-	        return new FrameContainer(imageData.args[0], this.isSameOrigin(imageData.args[0].src), this.options);
-	    } else {
-	        return new DummyImageContainer(imageData);
-	    }
-	};
-
-	ImageLoader.prototype.isSVG = function(src) {
-	    return src.substring(src.length - 3).toLowerCase() === "svg" || SVGContainer.prototype.isInline(src);
-	};
-
-	ImageLoader.prototype.imageExists = function(images, src) {
-	    return images.some(function(image) {
-	        return image.src === src;
-	    });
-	};
-
-	ImageLoader.prototype.isSameOrigin = function(url) {
-	    return (this.getOrigin(url) === this.origin);
-	};
-
-	ImageLoader.prototype.getOrigin = function(url) {
-	    var link = this.link || (this.link = document.createElement("a"));
-	    link.href = url;
-	    link.href = link.href; // IE9, LOL! - http://jsfiddle.net/niklasvh/2e48b/
-	    return link.protocol + link.hostname + link.port;
-	};
-
-	ImageLoader.prototype.getPromise = function(container) {
-	    return this.timeout(container, this.options.imageTimeout)['catch'](function() {
-	        var dummy = new DummyImageContainer(container.src);
-	        return dummy.promise.then(function(image) {
-	            container.image = image;
-	        });
-	    });
-	};
-
-	ImageLoader.prototype.get = function(src) {
-	    var found = null;
-	    return this.images.some(function(img) {
-	        return (found = img).src === src;
-	    }) ? found : null;
-	};
-
-	ImageLoader.prototype.fetch = function(nodes) {
-	    this.images = nodes.reduce(bind(this.findBackgroundImage, this), this.findImages(nodes));
-	    this.images.forEach(function(image, index) {
-	        image.promise.then(function() {
-	            log("Succesfully loaded image #"+ (index+1), image);
-	        }, function(e) {
-	            log("Failed loading image #"+ (index+1), image, e);
-	        });
-	    });
-	    this.ready = Promise.all(this.images.map(this.getPromise, this));
-	    log("Finished searching images");
-	    return this;
-	};
-
-	ImageLoader.prototype.timeout = function(container, timeout) {
-	    var timer;
-	    var promise = Promise.race([container.promise, new Promise(function(res, reject) {
-	        timer = setTimeout(function() {
-	            log("Timed out loading image", container);
-	            reject(container);
-	        }, timeout);
-	    })]).then(function(container) {
-	        clearTimeout(timer);
-	        return container;
-	    });
-	    promise['catch'](function() {
-	        clearTimeout(timer);
-	    });
-	    return promise;
-	};
-
-	module.exports = ImageLoader;
-
-	},{"./dummyimagecontainer":5,"./framecontainer":8,"./imagecontainer":10,"./lineargradientcontainer":12,"./log":13,"./proxyimagecontainer":17,"./svgcontainer":23,"./svgnodecontainer":24,"./utils":26,"./webkitgradientcontainer":27}],12:[function(_dereq_,module,exports){
-	var GradientContainer = _dereq_('./gradientcontainer');
-	var Color = _dereq_('./color');
-
-	function LinearGradientContainer(imageData) {
-	    GradientContainer.apply(this, arguments);
-	    this.type = GradientContainer.TYPES.LINEAR;
-
-	    var hasDirection = LinearGradientContainer.REGEXP_DIRECTION.test( imageData.args[0] ) ||
-	        !GradientContainer.REGEXP_COLORSTOP.test( imageData.args[0] );
-
-	    if (hasDirection) {
-	        imageData.args[0].split(/\s+/).reverse().forEach(function(position, index) {
-	            switch(position) {
-	            case "left":
-	                this.x0 = 0;
-	                this.x1 = 1;
-	                break;
-	            case "top":
-	                this.y0 = 0;
-	                this.y1 = 1;
-	                break;
-	            case "right":
-	                this.x0 = 1;
-	                this.x1 = 0;
-	                break;
-	            case "bottom":
-	                this.y0 = 1;
-	                this.y1 = 0;
-	                break;
-	            case "to":
-	                var y0 = this.y0;
-	                var x0 = this.x0;
-	                this.y0 = this.y1;
-	                this.x0 = this.x1;
-	                this.x1 = x0;
-	                this.y1 = y0;
-	                break;
-	            case "center":
-	                break; // centered by default
-	            // Firefox internally converts position keywords to percentages:
-	            // http://www.w3.org/TR/2010/WD-CSS2-20101207/colors.html#propdef-background-position
-	            default: // percentage or absolute length
-	                // TODO: support absolute start point positions (e.g., use bounds to convert px to a ratio)
-	                var ratio = parseFloat(position, 10) * 1e-2;
-	                if (isNaN(ratio)) { // invalid or unhandled value
-	                    break;
-	                }
-	                if (index === 0) {
-	                    this.y0 = ratio;
-	                    this.y1 = 1 - this.y0;
-	                } else {
-	                    this.x0 = ratio;
-	                    this.x1 = 1 - this.x0;
-	                }
-	                break;
-	            }
-	        }, this);
-	    } else {
-	        this.y0 = 0;
-	        this.y1 = 1;
-	    }
-
-	    this.colorStops = imageData.args.slice(hasDirection ? 1 : 0).map(function(colorStop) {
-	        var colorStopMatch = colorStop.match(GradientContainer.REGEXP_COLORSTOP);
-	        var value = +colorStopMatch[2];
-	        var unit = value === 0 ? "%" : colorStopMatch[3]; // treat "0" as "0%"
-	        return {
-	            color: new Color(colorStopMatch[1]),
-	            // TODO: support absolute stop positions (e.g., compute gradient line length & convert px to ratio)
-	            stop: unit === "%" ? value / 100 : null
-	        };
-	    });
-
-	    if (this.colorStops[0].stop === null) {
-	        this.colorStops[0].stop = 0;
-	    }
-
-	    if (this.colorStops[this.colorStops.length - 1].stop === null) {
-	        this.colorStops[this.colorStops.length - 1].stop = 1;
-	    }
-
-	    // calculates and fills-in explicit stop positions when omitted from rule
-	    this.colorStops.forEach(function(colorStop, index) {
-	        if (colorStop.stop === null) {
-	            this.colorStops.slice(index).some(function(find, count) {
-	                if (find.stop !== null) {
-	                    colorStop.stop = ((find.stop - this.colorStops[index - 1].stop) / (count + 1)) + this.colorStops[index - 1].stop;
-	                    return true;
-	                } else {
-	                    return false;
-	                }
-	            }, this);
-	        }
-	    }, this);
-	}
-
-	LinearGradientContainer.prototype = Object.create(GradientContainer.prototype);
-
-	// TODO: support <angle> (e.g. -?\d{1,3}(?:\.\d+)deg, etc. : https://developer.mozilla.org/docs/Web/CSS/angle )
-	LinearGradientContainer.REGEXP_DIRECTION = /^\s*(?:to|left|right|top|bottom|center|\d{1,3}(?:\.\d+)?%?)(?:\s|$)/i;
-
-	module.exports = LinearGradientContainer;
-
-	},{"./color":3,"./gradientcontainer":9}],13:[function(_dereq_,module,exports){
-	var logger = function() {
-	    if (logger.options.logging && window.console && window.console.log) {
-	        Function.prototype.bind.call(window.console.log, (window.console)).apply(window.console, [(Date.now() - logger.options.start) + "ms", "html2canvas:"].concat([].slice.call(arguments, 0)));
-	    }
-	};
-
-	logger.options = {logging: false};
-	module.exports = logger;
-
-	},{}],14:[function(_dereq_,module,exports){
-	var Color = _dereq_('./color');
-	var utils = _dereq_('./utils');
-	var getBounds = utils.getBounds;
-	var parseBackgrounds = utils.parseBackgrounds;
-	var offsetBounds = utils.offsetBounds;
-
-	function NodeContainer(node, parent) {
-	    this.node = node;
-	    this.parent = parent;
-	    this.stack = null;
-	    this.bounds = null;
-	    this.borders = null;
-	    this.clip = [];
-	    this.backgroundClip = [];
-	    this.offsetBounds = null;
-	    this.visible = null;
-	    this.computedStyles = null;
-	    this.colors = {};
-	    this.styles = {};
-	    this.backgroundImages = null;
-	    this.transformData = null;
-	    this.transformMatrix = null;
-	    this.isPseudoElement = false;
-	    this.opacity = null;
-	}
-
-	NodeContainer.prototype.cloneTo = function(stack) {
-	    stack.visible = this.visible;
-	    stack.borders = this.borders;
-	    stack.bounds = this.bounds;
-	    stack.clip = this.clip;
-	    stack.backgroundClip = this.backgroundClip;
-	    stack.computedStyles = this.computedStyles;
-	    stack.styles = this.styles;
-	    stack.backgroundImages = this.backgroundImages;
-	    stack.opacity = this.opacity;
-	};
-
-	NodeContainer.prototype.getOpacity = function() {
-	    return this.opacity === null ? (this.opacity = this.cssFloat('opacity')) : this.opacity;
-	};
-
-	NodeContainer.prototype.assignStack = function(stack) {
-	    this.stack = stack;
-	    stack.children.push(this);
-	};
-
-	NodeContainer.prototype.isElementVisible = function() {
-	    return this.node.nodeType === Node.TEXT_NODE ? this.parent.visible : (
-	        this.css('display') !== "none" &&
-	        this.css('visibility') !== "hidden" &&
-	        !this.node.hasAttribute("data-html2canvas-ignore") &&
-	        (this.node.nodeName !== "INPUT" || this.node.getAttribute("type") !== "hidden")
-	    );
-	};
-
-	NodeContainer.prototype.css = function(attribute) {
-	    if (!this.computedStyles) {
-	        this.computedStyles = this.isPseudoElement ? this.parent.computedStyle(this.before ? ":before" : ":after") : this.computedStyle(null);
-	    }
-
-	    return this.styles[attribute] || (this.styles[attribute] = this.computedStyles[attribute]);
-	};
-
-	NodeContainer.prototype.prefixedCss = function(attribute) {
-	    var prefixes = ["webkit", "moz", "ms", "o"];
-	    var value = this.css(attribute);
-	    if (value === undefined) {
-	        prefixes.some(function(prefix) {
-	            value = this.css(prefix + attribute.substr(0, 1).toUpperCase() + attribute.substr(1));
-	            return value !== undefined;
-	        }, this);
-	    }
-	    return value === undefined ? null : value;
-	};
-
-	NodeContainer.prototype.computedStyle = function(type) {
-	    return this.node.ownerDocument.defaultView.getComputedStyle(this.node, type);
-	};
-
-	NodeContainer.prototype.cssInt = function(attribute) {
-	    var value = parseInt(this.css(attribute), 10);
-	    return (isNaN(value)) ? 0 : value; // borders in old IE are throwing 'medium' for demo.html
-	};
-
-	NodeContainer.prototype.color = function(attribute) {
-	    return this.colors[attribute] || (this.colors[attribute] = new Color(this.css(attribute)));
-	};
-
-	NodeContainer.prototype.cssFloat = function(attribute) {
-	    var value = parseFloat(this.css(attribute));
-	    return (isNaN(value)) ? 0 : value;
-	};
-
-	NodeContainer.prototype.fontWeight = function() {
-	    var weight = this.css("fontWeight");
-	    switch(parseInt(weight, 10)){
-	    case 401:
-	        weight = "bold";
-	        break;
-	    case 400:
-	        weight = "normal";
-	        break;
-	    }
-	    return weight;
-	};
-
-	NodeContainer.prototype.parseClip = function() {
-	    var matches = this.css('clip').match(this.CLIP);
-	    if (matches) {
-	        return {
-	            top: parseInt(matches[1], 10),
-	            right: parseInt(matches[2], 10),
-	            bottom: parseInt(matches[3], 10),
-	            left: parseInt(matches[4], 10)
-	        };
-	    }
-	    return null;
-	};
-
-	NodeContainer.prototype.parseBackgroundImages = function() {
-	    return this.backgroundImages || (this.backgroundImages = parseBackgrounds(this.css("backgroundImage")));
-	};
-
-	NodeContainer.prototype.cssList = function(property, index) {
-	    var value = (this.css(property) || '').split(',');
-	    value = value[index || 0] || value[0] || 'auto';
-	    value = value.trim().split(' ');
-	    if (value.length === 1) {
-	        value = [value[0], isPercentage(value[0]) ? 'auto' : value[0]];
-	    }
-	    return value;
-	};
-
-	NodeContainer.prototype.parseBackgroundSize = function(bounds, image, index) {
-	    var size = this.cssList("backgroundSize", index);
-	    var width, height;
-
-	    if (isPercentage(size[0])) {
-	        width = bounds.width * parseFloat(size[0]) / 100;
-	    } else if (/contain|cover/.test(size[0])) {
-	        var targetRatio = bounds.width / bounds.height, currentRatio = image.width / image.height;
-	        return (targetRatio < currentRatio ^ size[0] === 'contain') ?  {width: bounds.height * currentRatio, height: bounds.height} : {width: bounds.width, height: bounds.width / currentRatio};
-	    } else {
-	        width = parseInt(size[0], 10);
-	    }
-
-	    if (size[0] === 'auto' && size[1] === 'auto') {
-	        height = image.height;
-	    } else if (size[1] === 'auto') {
-	        height = width / image.width * image.height;
-	    } else if (isPercentage(size[1])) {
-	        height =  bounds.height * parseFloat(size[1]) / 100;
-	    } else {
-	        height = parseInt(size[1], 10);
-	    }
-
-	    if (size[0] === 'auto') {
-	        width = height / image.height * image.width;
-	    }
-
-	    return {width: width, height: height};
-	};
-
-	NodeContainer.prototype.parseBackgroundPosition = function(bounds, image, index, backgroundSize) {
-	    var position = this.cssList('backgroundPosition', index);
-	    var left, top;
-
-	    if (isPercentage(position[0])){
-	        left = (bounds.width - (backgroundSize || image).width) * (parseFloat(position[0]) / 100);
-	    } else {
-	        left = parseInt(position[0], 10);
-	    }
-
-	    if (position[1] === 'auto') {
-	        top = left / image.width * image.height;
-	    } else if (isPercentage(position[1])){
-	        top =  (bounds.height - (backgroundSize || image).height) * parseFloat(position[1]) / 100;
-	    } else {
-	        top = parseInt(position[1], 10);
-	    }
-
-	    if (position[0] === 'auto') {
-	        left = top / image.height * image.width;
-	    }
-
-	    return {left: left, top: top};
-	};
-
-	NodeContainer.prototype.parseBackgroundRepeat = function(index) {
-	    return this.cssList("backgroundRepeat", index)[0];
-	};
-
-	NodeContainer.prototype.parseTextShadows = function() {
-	    var textShadow = this.css("textShadow");
-	    var results = [];
-
-	    if (textShadow && textShadow !== 'none') {
-	        var shadows = textShadow.match(this.TEXT_SHADOW_PROPERTY);
-	        for (var i = 0; shadows && (i < shadows.length); i++) {
-	            var s = shadows[i].match(this.TEXT_SHADOW_VALUES);
-	            results.push({
-	                color: new Color(s[0]),
-	                offsetX: s[1] ? parseFloat(s[1].replace('px', '')) : 0,
-	                offsetY: s[2] ? parseFloat(s[2].replace('px', '')) : 0,
-	                blur: s[3] ? s[3].replace('px', '') : 0
-	            });
-	        }
-	    }
-	    return results;
-	};
-
-	NodeContainer.prototype.parseTransform = function() {
-	    if (!this.transformData) {
-	        if (this.hasTransform()) {
-	            var offset = this.parseBounds();
-	            var origin = this.prefixedCss("transformOrigin").split(" ").map(removePx).map(asFloat);
-	            origin[0] += offset.left;
-	            origin[1] += offset.top;
-	            this.transformData = {
-	                origin: origin,
-	                matrix: this.parseTransformMatrix()
-	            };
-	        } else {
-	            this.transformData = {
-	                origin: [0, 0],
-	                matrix: [1, 0, 0, 1, 0, 0]
-	            };
-	        }
-	    }
-	    return this.transformData;
-	};
-
-	NodeContainer.prototype.parseTransformMatrix = function() {
-	    if (!this.transformMatrix) {
-	        var transform = this.prefixedCss("transform");
-	        var matrix = transform ? parseMatrix(transform.match(this.MATRIX_PROPERTY)) : null;
-	        this.transformMatrix = matrix ? matrix : [1, 0, 0, 1, 0, 0];
-	    }
-	    return this.transformMatrix;
-	};
-
-	NodeContainer.prototype.parseBounds = function() {
-	    return this.bounds || (this.bounds = this.hasTransform() ? offsetBounds(this.node) : getBounds(this.node));
-	};
-
-	NodeContainer.prototype.hasTransform = function() {
-	    return this.parseTransformMatrix().join(",") !== "1,0,0,1,0,0" || (this.parent && this.parent.hasTransform());
-	};
-
-	NodeContainer.prototype.getValue = function() {
-	    var value = this.node.value || "";
-	    if (this.node.tagName === "SELECT") {
-	        value = selectionValue(this.node);
-	    } else if (this.node.type === "password") {
-	        value = Array(value.length + 1).join('\u2022'); // jshint ignore:line
-	    }
-	    return value.length === 0 ? (this.node.placeholder || "") : value;
-	};
-
-	NodeContainer.prototype.MATRIX_PROPERTY = /(matrix|matrix3d)\((.+)\)/;
-	NodeContainer.prototype.TEXT_SHADOW_PROPERTY = /((rgba|rgb)\([^\)]+\)(\s-?\d+px){0,})/g;
-	NodeContainer.prototype.TEXT_SHADOW_VALUES = /(-?\d+px)|(#.+)|(rgb\(.+\))|(rgba\(.+\))/g;
-	NodeContainer.prototype.CLIP = /^rect\((\d+)px,? (\d+)px,? (\d+)px,? (\d+)px\)$/;
-
-	function selectionValue(node) {
-	    var option = node.options[node.selectedIndex || 0];
-	    return option ? (option.text || "") : "";
-	}
-
-	function parseMatrix(match) {
-	    if (match && match[1] === "matrix") {
-	        return match[2].split(",").map(function(s) {
-	            return parseFloat(s.trim());
-	        });
-	    } else if (match && match[1] === "matrix3d") {
-	        var matrix3d = match[2].split(",").map(function(s) {
-	          return parseFloat(s.trim());
-	        });
-	        return [matrix3d[0], matrix3d[1], matrix3d[4], matrix3d[5], matrix3d[12], matrix3d[13]];
-	    }
-	}
-
-	function isPercentage(value) {
-	    return value.toString().indexOf("%") !== -1;
-	}
-
-	function removePx(str) {
-	    return str.replace("px", "");
-	}
-
-	function asFloat(str) {
-	    return parseFloat(str);
-	}
-
-	module.exports = NodeContainer;
-
-	},{"./color":3,"./utils":26}],15:[function(_dereq_,module,exports){
-	var log = _dereq_('./log');
-	var punycode = _dereq_('punycode');
-	var NodeContainer = _dereq_('./nodecontainer');
-	var TextContainer = _dereq_('./textcontainer');
-	var PseudoElementContainer = _dereq_('./pseudoelementcontainer');
-	var FontMetrics = _dereq_('./fontmetrics');
-	var Color = _dereq_('./color');
-	var StackingContext = _dereq_('./stackingcontext');
-	var utils = _dereq_('./utils');
-	var bind = utils.bind;
-	var getBounds = utils.getBounds;
-	var parseBackgrounds = utils.parseBackgrounds;
-	var offsetBounds = utils.offsetBounds;
-
-	function NodeParser(element, renderer, support, imageLoader, options) {
-	    log("Starting NodeParser");
-	    this.renderer = renderer;
-	    this.options = options;
-	    this.range = null;
-	    this.support = support;
-	    this.renderQueue = [];
-	    this.stack = new StackingContext(true, 1, element.ownerDocument, null);
-	    var parent = new NodeContainer(element, null);
-	    if (options.background) {
-	        renderer.rectangle(0, 0, renderer.width, renderer.height, new Color(options.background));
-	    }
-	    if (element === element.ownerDocument.documentElement) {
-	        // http://www.w3.org/TR/css3-background/#special-backgrounds
-	        var canvasBackground = new NodeContainer(parent.color('backgroundColor').isTransparent() ? element.ownerDocument.body : element.ownerDocument.documentElement, null);
-	        renderer.rectangle(0, 0, renderer.width, renderer.height, canvasBackground.color('backgroundColor'));
-	    }
-	    parent.visibile = parent.isElementVisible();
-	    this.createPseudoHideStyles(element.ownerDocument);
-	    this.disableAnimations(element.ownerDocument);
-	    this.nodes = flatten([parent].concat(this.getChildren(parent)).filter(function(container) {
-	        return container.visible = container.isElementVisible();
-	    }).map(this.getPseudoElements, this));
-	    this.fontMetrics = new FontMetrics();
-	    log("Fetched nodes, total:", this.nodes.length);
-	    log("Calculate overflow clips");
-	    this.calculateOverflowClips();
-	    log("Start fetching images");
-	    this.images = imageLoader.fetch(this.nodes.filter(isElement));
-	    this.ready = this.images.ready.then(bind(function() {
-	        log("Images loaded, starting parsing");
-	        log("Creating stacking contexts");
-	        this.createStackingContexts();
-	        log("Sorting stacking contexts");
-	        this.sortStackingContexts(this.stack);
-	        this.parse(this.stack);
-	        log("Render queue created with " + this.renderQueue.length + " items");
-	        return new Promise(bind(function(resolve) {
-	            if (!options.async) {
-	                this.renderQueue.forEach(this.paint, this);
-	                resolve();
-	            } else if (typeof(options.async) === "function") {
-	                options.async.call(this, this.renderQueue, resolve);
-	            } else if (this.renderQueue.length > 0){
-	                this.renderIndex = 0;
-	                this.asyncRenderer(this.renderQueue, resolve);
-	            } else {
-	                resolve();
-	            }
-	        }, this));
-	    }, this));
-	}
-
-	NodeParser.prototype.calculateOverflowClips = function() {
-	    this.nodes.forEach(function(container) {
-	        if (isElement(container)) {
-	            if (isPseudoElement(container)) {
-	                container.appendToDOM();
-	            }
-	            container.borders = this.parseBorders(container);
-	            var clip = (container.css('overflow') === "hidden") ? [container.borders.clip] : [];
-	            var cssClip = container.parseClip();
-	            if (cssClip && ["absolute", "fixed"].indexOf(container.css('position')) !== -1) {
-	                clip.push([["rect",
-	                        container.bounds.left + cssClip.left,
-	                        container.bounds.top + cssClip.top,
-	                        cssClip.right - cssClip.left,
-	                        cssClip.bottom - cssClip.top
-	                ]]);
-	            }
-	            container.clip = hasParentClip(container) ? container.parent.clip.concat(clip) : clip;
-	            container.backgroundClip = (container.css('overflow') !== "hidden") ? container.clip.concat([container.borders.clip]) : container.clip;
-	            if (isPseudoElement(container)) {
-	                container.cleanDOM();
-	            }
-	        } else if (isTextNode(container)) {
-	            container.clip = hasParentClip(container) ? container.parent.clip : [];
-	        }
-	        if (!isPseudoElement(container)) {
-	            container.bounds = null;
-	        }
-	    }, this);
-	};
-
-	function hasParentClip(container) {
-	    return container.parent && container.parent.clip.length;
-	}
-
-	NodeParser.prototype.asyncRenderer = function(queue, resolve, asyncTimer) {
-	    asyncTimer = asyncTimer || Date.now();
-	    this.paint(queue[this.renderIndex++]);
-	    if (queue.length === this.renderIndex) {
-	        resolve();
-	    } else if (asyncTimer + 20 > Date.now()) {
-	        this.asyncRenderer(queue, resolve, asyncTimer);
-	    } else {
-	        setTimeout(bind(function() {
-	            this.asyncRenderer(queue, resolve);
-	        }, this), 0);
-	    }
-	};
-
-	NodeParser.prototype.createPseudoHideStyles = function(document) {
-	    this.createStyles(document, '.' + PseudoElementContainer.prototype.PSEUDO_HIDE_ELEMENT_CLASS_BEFORE + ':before { content: "" !important; display: none !important; }' +
-	        '.' + PseudoElementContainer.prototype.PSEUDO_HIDE_ELEMENT_CLASS_AFTER + ':after { content: "" !important; display: none !important; }');
-	};
-
-	NodeParser.prototype.disableAnimations = function(document) {
-	    this.createStyles(document, '* { -webkit-animation: none !important; -moz-animation: none !important; -o-animation: none !important; animation: none !important; ' +
-	        '-webkit-transition: none !important; -moz-transition: none !important; -o-transition: none !important; transition: none !important;}');
-	};
-
-	NodeParser.prototype.createStyles = function(document, styles) {
-	    var hidePseudoElements = document.createElement('style');
-	    hidePseudoElements.innerHTML = styles;
-	    document.body.appendChild(hidePseudoElements);
-	};
-
-	NodeParser.prototype.getPseudoElements = function(container) {
-	    var nodes = [[container]];
-	    if (container.node.nodeType === Node.ELEMENT_NODE) {
-	        var before = this.getPseudoElement(container, ":before");
-	        var after = this.getPseudoElement(container, ":after");
-
-	        if (before) {
-	            nodes.push(before);
-	        }
-
-	        if (after) {
-	            nodes.push(after);
-	        }
-	    }
-	    return flatten(nodes);
-	};
-
-	function toCamelCase(str) {
-	    return str.replace(/(\-[a-z])/g, function(match){
-	        return match.toUpperCase().replace('-','');
-	    });
-	}
-
-	NodeParser.prototype.getPseudoElement = function(container, type) {
-	    var style = container.computedStyle(type);
-	    if(!style || !style.content || style.content === "none" || style.content === "-moz-alt-content" || style.display === "none") {
-	        return null;
-	    }
-
-	    var content = stripQuotes(style.content);
-	    var isImage = content.substr(0, 3) === 'url';
-	    var pseudoNode = document.createElement(isImage ? 'img' : 'html2canvaspseudoelement');
-	    var pseudoContainer = new PseudoElementContainer(pseudoNode, container, type);
-
-	    for (var i = style.length-1; i >= 0; i--) {
-	        var property = toCamelCase(style.item(i));
-	        pseudoNode.style[property] = style[property];
-	    }
-
-	    pseudoNode.className = PseudoElementContainer.prototype.PSEUDO_HIDE_ELEMENT_CLASS_BEFORE + " " + PseudoElementContainer.prototype.PSEUDO_HIDE_ELEMENT_CLASS_AFTER;
-
-	    if (isImage) {
-	        pseudoNode.src = parseBackgrounds(content)[0].args[0];
-	        return [pseudoContainer];
-	    } else {
-	        var text = document.createTextNode(content);
-	        pseudoNode.appendChild(text);
-	        return [pseudoContainer, new TextContainer(text, pseudoContainer)];
-	    }
-	};
-
-
-	NodeParser.prototype.getChildren = function(parentContainer) {
-	    return flatten([].filter.call(parentContainer.node.childNodes, renderableNode).map(function(node) {
-	        var container = [node.nodeType === Node.TEXT_NODE ? new TextContainer(node, parentContainer) : new NodeContainer(node, parentContainer)].filter(nonIgnoredElement);
-	        return node.nodeType === Node.ELEMENT_NODE && container.length && node.tagName !== "TEXTAREA" ? (container[0].isElementVisible() ? container.concat(this.getChildren(container[0])) : []) : container;
-	    }, this));
-	};
-
-	NodeParser.prototype.newStackingContext = function(container, hasOwnStacking) {
-	    var stack = new StackingContext(hasOwnStacking, container.getOpacity(), container.node, container.parent);
-	    container.cloneTo(stack);
-	    var parentStack = hasOwnStacking ? stack.getParentStack(this) : stack.parent.stack;
-	    parentStack.contexts.push(stack);
-	    container.stack = stack;
-	};
-
-	NodeParser.prototype.createStackingContexts = function() {
-	    this.nodes.forEach(function(container) {
-	        if (isElement(container) && (this.isRootElement(container) || hasOpacity(container) || isPositionedForStacking(container) || this.isBodyWithTransparentRoot(container) || container.hasTransform())) {
-	            this.newStackingContext(container, true);
-	        } else if (isElement(container) && ((isPositioned(container) && zIndex0(container)) || isInlineBlock(container) || isFloating(container))) {
-	            this.newStackingContext(container, false);
-	        } else {
-	            container.assignStack(container.parent.stack);
-	        }
-	    }, this);
-	};
-
-	NodeParser.prototype.isBodyWithTransparentRoot = function(container) {
-	    return container.node.nodeName === "BODY" && container.parent.color('backgroundColor').isTransparent();
-	};
-
-	NodeParser.prototype.isRootElement = function(container) {
-	    return container.parent === null;
-	};
-
-	NodeParser.prototype.sortStackingContexts = function(stack) {
-	    stack.contexts.sort(zIndexSort(stack.contexts.slice(0)));
-	    stack.contexts.forEach(this.sortStackingContexts, this);
-	};
-
-	NodeParser.prototype.parseTextBounds = function(container) {
-	    return function(text, index, textList) {
-	        if (container.parent.css("textDecoration").substr(0, 4) !== "none" || text.trim().length !== 0) {
-	            if (this.support.rangeBounds && !container.parent.hasTransform()) {
-	                var offset = textList.slice(0, index).join("").length;
-	                return this.getRangeBounds(container.node, offset, text.length);
-	            } else if (container.node && typeof(container.node.data) === "string") {
-	                var replacementNode = container.node.splitText(text.length);
-	                var bounds = this.getWrapperBounds(container.node, container.parent.hasTransform());
-	                container.node = replacementNode;
-	                return bounds;
-	            }
-	        } else if(!this.support.rangeBounds || container.parent.hasTransform()){
-	            container.node = container.node.splitText(text.length);
-	        }
-	        return {};
-	    };
-	};
-
-	NodeParser.prototype.getWrapperBounds = function(node, transform) {
-	    var wrapper = node.ownerDocument.createElement('html2canvaswrapper');
-	    var parent = node.parentNode,
-	        backupText = node.cloneNode(true);
-
-	    wrapper.appendChild(node.cloneNode(true));
-	    parent.replaceChild(wrapper, node);
-	    var bounds = transform ? offsetBounds(wrapper) : getBounds(wrapper);
-	    parent.replaceChild(backupText, wrapper);
-	    return bounds;
-	};
-
-	NodeParser.prototype.getRangeBounds = function(node, offset, length) {
-	    var range = this.range || (this.range = node.ownerDocument.createRange());
-	    range.setStart(node, offset);
-	    range.setEnd(node, offset + length);
-	    return range.getBoundingClientRect();
-	};
-
-	function ClearTransform() {}
-
-	NodeParser.prototype.parse = function(stack) {
-	    // http://www.w3.org/TR/CSS21/visuren.html#z-index
-	    var negativeZindex = stack.contexts.filter(negativeZIndex); // 2. the child stacking contexts with negative stack levels (most negative first).
-	    var descendantElements = stack.children.filter(isElement);
-	    var descendantNonFloats = descendantElements.filter(not(isFloating));
-	    var nonInlineNonPositionedDescendants = descendantNonFloats.filter(not(isPositioned)).filter(not(inlineLevel)); // 3 the in-flow, non-inline-level, non-positioned descendants.
-	    var nonPositionedFloats = descendantElements.filter(not(isPositioned)).filter(isFloating); // 4. the non-positioned floats.
-	    var inFlow = descendantNonFloats.filter(not(isPositioned)).filter(inlineLevel); // 5. the in-flow, inline-level, non-positioned descendants, including inline tables and inline blocks.
-	    var stackLevel0 = stack.contexts.concat(descendantNonFloats.filter(isPositioned)).filter(zIndex0); // 6. the child stacking contexts with stack level 0 and the positioned descendants with stack level 0.
-	    var text = stack.children.filter(isTextNode).filter(hasText);
-	    var positiveZindex = stack.contexts.filter(positiveZIndex); // 7. the child stacking contexts with positive stack levels (least positive first).
-	    negativeZindex.concat(nonInlineNonPositionedDescendants).concat(nonPositionedFloats)
-	        .concat(inFlow).concat(stackLevel0).concat(text).concat(positiveZindex).forEach(function(container) {
-	            this.renderQueue.push(container);
-	            if (isStackingContext(container)) {
-	                this.parse(container);
-	                this.renderQueue.push(new ClearTransform());
-	            }
-	        }, this);
-	};
-
-	NodeParser.prototype.paint = function(container) {
-	    try {
-	        if (container instanceof ClearTransform) {
-	            this.renderer.ctx.restore();
-	        } else if (isTextNode(container)) {
-	            if (isPseudoElement(container.parent)) {
-	                container.parent.appendToDOM();
-	            }
-	            this.paintText(container);
-	            if (isPseudoElement(container.parent)) {
-	                container.parent.cleanDOM();
-	            }
-	        } else {
-	            this.paintNode(container);
-	        }
-	    } catch(e) {
-	        log(e);
-	        if (this.options.strict) {
-	            throw e;
-	        }
-	    }
-	};
-
-	NodeParser.prototype.paintNode = function(container) {
-	    if (isStackingContext(container)) {
-	        this.renderer.setOpacity(container.opacity);
-	        this.renderer.ctx.save();
-	        if (container.hasTransform()) {
-	            this.renderer.setTransform(container.parseTransform());
-	        }
-	    }
-
-	    if (container.node.nodeName === "INPUT" && container.node.type === "checkbox") {
-	        this.paintCheckbox(container);
-	    } else if (container.node.nodeName === "INPUT" && container.node.type === "radio") {
-	        this.paintRadio(container);
-	    } else {
-	        this.paintElement(container);
-	    }
-	};
-
-	NodeParser.prototype.paintElement = function(container) {
-	    var bounds = container.parseBounds();
-	    this.renderer.clip(container.backgroundClip, function() {
-	        this.renderer.renderBackground(container, bounds, container.borders.borders.map(getWidth));
-	    }, this);
-
-	    this.renderer.clip(container.clip, function() {
-	        this.renderer.renderBorders(container.borders.borders);
-	    }, this);
-
-	    this.renderer.clip(container.backgroundClip, function() {
-	        switch (container.node.nodeName) {
-	        case "svg":
-	        case "IFRAME":
-	            var imgContainer = this.images.get(container.node);
-	            if (imgContainer) {
-	                this.renderer.renderImage(container, bounds, container.borders, imgContainer);
-	            } else {
-	                log("Error loading <" + container.node.nodeName + ">", container.node);
-	            }
-	            break;
-	        case "IMG":
-	            var imageContainer = this.images.get(container.node.src);
-	            if (imageContainer) {
-	                this.renderer.renderImage(container, bounds, container.borders, imageContainer);
-	            } else {
-	                log("Error loading <img>", container.node.src);
-	            }
-	            break;
-	        case "CANVAS":
-	            this.renderer.renderImage(container, bounds, container.borders, {image: container.node});
-	            break;
-	        case "SELECT":
-	        case "INPUT":
-	        case "TEXTAREA":
-	            this.paintFormValue(container);
-	            break;
-	        }
-	    }, this);
-	};
-
-	NodeParser.prototype.paintCheckbox = function(container) {
-	    var b = container.parseBounds();
-
-	    var size = Math.min(b.width, b.height);
-	    var bounds = {width: size - 1, height: size - 1, top: b.top, left: b.left};
-	    var r = [3, 3];
-	    var radius = [r, r, r, r];
-	    var borders = [1,1,1,1].map(function(w) {
-	        return {color: new Color('#A5A5A5'), width: w};
-	    });
-
-	    var borderPoints = calculateCurvePoints(bounds, radius, borders);
-
-	    this.renderer.clip(container.backgroundClip, function() {
-	        this.renderer.rectangle(bounds.left + 1, bounds.top + 1, bounds.width - 2, bounds.height - 2, new Color("#DEDEDE"));
-	        this.renderer.renderBorders(calculateBorders(borders, bounds, borderPoints, radius));
-	        if (container.node.checked) {
-	            this.renderer.font(new Color('#424242'), 'normal', 'normal', 'bold', (size - 3) + "px", 'arial');
-	            this.renderer.text("\u2714", bounds.left + size / 6, bounds.top + size - 1);
-	        }
-	    }, this);
-	};
-
-	NodeParser.prototype.paintRadio = function(container) {
-	    var bounds = container.parseBounds();
-
-	    var size = Math.min(bounds.width, bounds.height) - 2;
-
-	    this.renderer.clip(container.backgroundClip, function() {
-	        this.renderer.circleStroke(bounds.left + 1, bounds.top + 1, size, new Color('#DEDEDE'), 1, new Color('#A5A5A5'));
-	        if (container.node.checked) {
-	            this.renderer.circle(Math.ceil(bounds.left + size / 4) + 1, Math.ceil(bounds.top + size / 4) + 1, Math.floor(size / 2), new Color('#424242'));
-	        }
-	    }, this);
-	};
-
-	NodeParser.prototype.paintFormValue = function(container) {
-	    var value = container.getValue();
-	    if (value.length > 0) {
-	        var document = container.node.ownerDocument;
-	        var wrapper = document.createElement('html2canvaswrapper');
-	        var properties = ['lineHeight', 'textAlign', 'fontFamily', 'fontWeight', 'fontSize', 'color',
-	            'paddingLeft', 'paddingTop', 'paddingRight', 'paddingBottom',
-	            'width', 'height', 'borderLeftStyle', 'borderTopStyle', 'borderLeftWidth', 'borderTopWidth',
-	            'boxSizing', 'whiteSpace', 'wordWrap'];
-
-	        properties.forEach(function(property) {
-	            try {
-	                wrapper.style[property] = container.css(property);
-	            } catch(e) {
-	                // Older IE has issues with "border"
-	                log("html2canvas: Parse: Exception caught in renderFormValue: " + e.message);
-	            }
-	        });
-	        var bounds = container.parseBounds();
-	        wrapper.style.position = "fixed";
-	        wrapper.style.left = bounds.left + "px";
-	        wrapper.style.top = bounds.top + "px";
-	        wrapper.textContent = value;
-	        document.body.appendChild(wrapper);
-	        this.paintText(new TextContainer(wrapper.firstChild, container));
-	        document.body.removeChild(wrapper);
-	    }
-	};
-
-	NodeParser.prototype.paintText = function(container) {
-	    container.applyTextTransform();
-	    var characters = punycode.ucs2.decode(container.node.data);
-	    var textList = (!this.options.letterRendering || noLetterSpacing(container)) && !hasUnicode(container.node.data) ? getWords(characters) : characters.map(function(character) {
-	        return punycode.ucs2.encode([character]);
-	    });
-
-	    var weight = container.parent.fontWeight();
-	    var size = container.parent.css('fontSize');
-	    var family = container.parent.css('fontFamily');
-	    var shadows = container.parent.parseTextShadows();
-
-	    this.renderer.font(container.parent.color('color'), container.parent.css('fontStyle'), container.parent.css('fontVariant'), weight, size, family);
-	    if (shadows.length) {
-	        // TODO: support multiple text shadows
-	        this.renderer.fontShadow(shadows[0].color, shadows[0].offsetX, shadows[0].offsetY, shadows[0].blur);
-	    } else {
-	        this.renderer.clearShadow();
-	    }
-
-	    this.renderer.clip(container.parent.clip, function() {
-	        textList.map(this.parseTextBounds(container), this).forEach(function(bounds, index) {
-	            if (bounds) {
-	                this.renderer.text(textList[index], bounds.left, bounds.bottom);
-	                this.renderTextDecoration(container.parent, bounds, this.fontMetrics.getMetrics(family, size));
-	            }
-	        }, this);
-	    }, this);
-	};
-
-	NodeParser.prototype.renderTextDecoration = function(container, bounds, metrics) {
-	    switch(container.css("textDecoration").split(" ")[0]) {
-	    case "underline":
-	        // Draws a line at the baseline of the font
-	        // TODO As some browsers display the line as more than 1px if the font-size is big, need to take that into account both in position and size
-	        this.renderer.rectangle(bounds.left, Math.round(bounds.top + metrics.baseline + metrics.lineWidth), bounds.width, 1, container.color("color"));
-	        break;
-	    case "overline":
-	        this.renderer.rectangle(bounds.left, Math.round(bounds.top), bounds.width, 1, container.color("color"));
-	        break;
-	    case "line-through":
-	        // TODO try and find exact position for line-through
-	        this.renderer.rectangle(bounds.left, Math.ceil(bounds.top + metrics.middle + metrics.lineWidth), bounds.width, 1, container.color("color"));
-	        break;
-	    }
-	};
-
-	var borderColorTransforms = {
-	    inset: [
-	        ["darken", 0.60],
-	        ["darken", 0.10],
-	        ["darken", 0.10],
-	        ["darken", 0.60]
-	    ]
-	};
-
-	NodeParser.prototype.parseBorders = function(container) {
-	    var nodeBounds = container.parseBounds();
-	    var radius = getBorderRadiusData(container);
-	    var borders = ["Top", "Right", "Bottom", "Left"].map(function(side, index) {
-	        var style = container.css('border' + side + 'Style');
-	        var color = container.color('border' + side + 'Color');
-	        if (style === "inset" && color.isBlack()) {
-	            color = new Color([255, 255, 255, color.a]); // this is wrong, but
-	        }
-	        var colorTransform = borderColorTransforms[style] ? borderColorTransforms[style][index] : null;
-	        return {
-	            width: container.cssInt('border' + side + 'Width'),
-	            color: colorTransform ? color[colorTransform[0]](colorTransform[1]) : color,
-	            args: null
-	        };
-	    });
-	    var borderPoints = calculateCurvePoints(nodeBounds, radius, borders);
-
-	    return {
-	        clip: this.parseBackgroundClip(container, borderPoints, borders, radius, nodeBounds),
-	        borders: calculateBorders(borders, nodeBounds, borderPoints, radius)
-	    };
-	};
-
-	function calculateBorders(borders, nodeBounds, borderPoints, radius) {
-	    return borders.map(function(border, borderSide) {
-	        if (border.width > 0) {
-	            var bx = nodeBounds.left;
-	            var by = nodeBounds.top;
-	            var bw = nodeBounds.width;
-	            var bh = nodeBounds.height - (borders[2].width);
-
-	            switch(borderSide) {
-	            case 0:
-	                // top border
-	                bh = borders[0].width;
-	                border.args = drawSide({
-	                        c1: [bx, by],
-	                        c2: [bx + bw, by],
-	                        c3: [bx + bw - borders[1].width, by + bh],
-	                        c4: [bx + borders[3].width, by + bh]
-	                    }, radius[0], radius[1],
-	                    borderPoints.topLeftOuter, borderPoints.topLeftInner, borderPoints.topRightOuter, borderPoints.topRightInner);
-	                break;
-	            case 1:
-	                // right border
-	                bx = nodeBounds.left + nodeBounds.width - (borders[1].width);
-	                bw = borders[1].width;
-
-	                border.args = drawSide({
-	                        c1: [bx + bw, by],
-	                        c2: [bx + bw, by + bh + borders[2].width],
-	                        c3: [bx, by + bh],
-	                        c4: [bx, by + borders[0].width]
-	                    }, radius[1], radius[2],
-	                    borderPoints.topRightOuter, borderPoints.topRightInner, borderPoints.bottomRightOuter, borderPoints.bottomRightInner);
-	                break;
-	            case 2:
-	                // bottom border
-	                by = (by + nodeBounds.height) - (borders[2].width);
-	                bh = borders[2].width;
-	                border.args = drawSide({
-	                        c1: [bx + bw, by + bh],
-	                        c2: [bx, by + bh],
-	                        c3: [bx + borders[3].width, by],
-	                        c4: [bx + bw - borders[3].width, by]
-	                    }, radius[2], radius[3],
-	                    borderPoints.bottomRightOuter, borderPoints.bottomRightInner, borderPoints.bottomLeftOuter, borderPoints.bottomLeftInner);
-	                break;
-	            case 3:
-	                // left border
-	                bw = borders[3].width;
-	                border.args = drawSide({
-	                        c1: [bx, by + bh + borders[2].width],
-	                        c2: [bx, by],
-	                        c3: [bx + bw, by + borders[0].width],
-	                        c4: [bx + bw, by + bh]
-	                    }, radius[3], radius[0],
-	                    borderPoints.bottomLeftOuter, borderPoints.bottomLeftInner, borderPoints.topLeftOuter, borderPoints.topLeftInner);
-	                break;
-	            }
-	        }
-	        return border;
-	    });
-	}
-
-	NodeParser.prototype.parseBackgroundClip = function(container, borderPoints, borders, radius, bounds) {
-	    var backgroundClip = container.css('backgroundClip'),
-	        borderArgs = [];
-
-	    switch(backgroundClip) {
-	    case "content-box":
-	    case "padding-box":
-	        parseCorner(borderArgs, radius[0], radius[1], borderPoints.topLeftInner, borderPoints.topRightInner, bounds.left + borders[3].width, bounds.top + borders[0].width);
-	        parseCorner(borderArgs, radius[1], radius[2], borderPoints.topRightInner, borderPoints.bottomRightInner, bounds.left + bounds.width - borders[1].width, bounds.top + borders[0].width);
-	        parseCorner(borderArgs, radius[2], radius[3], borderPoints.bottomRightInner, borderPoints.bottomLeftInner, bounds.left + bounds.width - borders[1].width, bounds.top + bounds.height - borders[2].width);
-	        parseCorner(borderArgs, radius[3], radius[0], borderPoints.bottomLeftInner, borderPoints.topLeftInner, bounds.left + borders[3].width, bounds.top + bounds.height - borders[2].width);
-	        break;
-
-	    default:
-	        parseCorner(borderArgs, radius[0], radius[1], borderPoints.topLeftOuter, borderPoints.topRightOuter, bounds.left, bounds.top);
-	        parseCorner(borderArgs, radius[1], radius[2], borderPoints.topRightOuter, borderPoints.bottomRightOuter, bounds.left + bounds.width, bounds.top);
-	        parseCorner(borderArgs, radius[2], radius[3], borderPoints.bottomRightOuter, borderPoints.bottomLeftOuter, bounds.left + bounds.width, bounds.top + bounds.height);
-	        parseCorner(borderArgs, radius[3], radius[0], borderPoints.bottomLeftOuter, borderPoints.topLeftOuter, bounds.left, bounds.top + bounds.height);
-	        break;
-	    }
-
-	    return borderArgs;
-	};
-
-	function getCurvePoints(x, y, r1, r2) {
-	    var kappa = 4 * ((Math.sqrt(2) - 1) / 3);
-	    var ox = (r1) * kappa, // control point offset horizontal
-	        oy = (r2) * kappa, // control point offset vertical
-	        xm = x + r1, // x-middle
-	        ym = y + r2; // y-middle
-	    return {
-	        topLeft: bezierCurve({x: x, y: ym}, {x: x, y: ym - oy}, {x: xm - ox, y: y}, {x: xm, y: y}),
-	        topRight: bezierCurve({x: x, y: y}, {x: x + ox,y: y}, {x: xm, y: ym - oy}, {x: xm, y: ym}),
-	        bottomRight: bezierCurve({x: xm, y: y}, {x: xm, y: y + oy}, {x: x + ox, y: ym}, {x: x, y: ym}),
-	        bottomLeft: bezierCurve({x: xm, y: ym}, {x: xm - ox, y: ym}, {x: x, y: y + oy}, {x: x, y:y})
-	    };
-	}
-
-	function calculateCurvePoints(bounds, borderRadius, borders) {
-	    var x = bounds.left,
-	        y = bounds.top,
-	        width = bounds.width,
-	        height = bounds.height,
-
-	        tlh = borderRadius[0][0] < width / 2 ? borderRadius[0][0] : width / 2,
-	        tlv = borderRadius[0][1] < height / 2 ? borderRadius[0][1] : height / 2,
-	        trh = borderRadius[1][0] < width / 2 ? borderRadius[1][0] : width / 2,
-	        trv = borderRadius[1][1] < height / 2 ? borderRadius[1][1] : height / 2,
-	        brh = borderRadius[2][0] < width / 2 ? borderRadius[2][0] : width / 2,
-	        brv = borderRadius[2][1] < height / 2 ? borderRadius[2][1] : height / 2,
-	        blh = borderRadius[3][0] < width / 2 ? borderRadius[3][0] : width / 2,
-	        blv = borderRadius[3][1] < height / 2 ? borderRadius[3][1] : height / 2;
-
-	    var topWidth = width - trh,
-	        rightHeight = height - brv,
-	        bottomWidth = width - brh,
-	        leftHeight = height - blv;
-
-	    return {
-	        topLeftOuter: getCurvePoints(x, y, tlh, tlv).topLeft.subdivide(0.5),
-	        topLeftInner: getCurvePoints(x + borders[3].width, y + borders[0].width, Math.max(0, tlh - borders[3].width), Math.max(0, tlv - borders[0].width)).topLeft.subdivide(0.5),
-	        topRightOuter: getCurvePoints(x + topWidth, y, trh, trv).topRight.subdivide(0.5),
-	        topRightInner: getCurvePoints(x + Math.min(topWidth, width + borders[3].width), y + borders[0].width, (topWidth > width + borders[3].width) ? 0 :trh - borders[3].width, trv - borders[0].width).topRight.subdivide(0.5),
-	        bottomRightOuter: getCurvePoints(x + bottomWidth, y + rightHeight, brh, brv).bottomRight.subdivide(0.5),
-	        bottomRightInner: getCurvePoints(x + Math.min(bottomWidth, width - borders[3].width), y + Math.min(rightHeight, height + borders[0].width), Math.max(0, brh - borders[1].width),  brv - borders[2].width).bottomRight.subdivide(0.5),
-	        bottomLeftOuter: getCurvePoints(x, y + leftHeight, blh, blv).bottomLeft.subdivide(0.5),
-	        bottomLeftInner: getCurvePoints(x + borders[3].width, y + leftHeight, Math.max(0, blh - borders[3].width), blv - borders[2].width).bottomLeft.subdivide(0.5)
-	    };
-	}
-
-	function bezierCurve(start, startControl, endControl, end) {
-	    var lerp = function (a, b, t) {
-	        return {
-	            x: a.x + (b.x - a.x) * t,
-	            y: a.y + (b.y - a.y) * t
-	        };
-	    };
-
-	    return {
-	        start: start,
-	        startControl: startControl,
-	        endControl: endControl,
-	        end: end,
-	        subdivide: function(t) {
-	            var ab = lerp(start, startControl, t),
-	                bc = lerp(startControl, endControl, t),
-	                cd = lerp(endControl, end, t),
-	                abbc = lerp(ab, bc, t),
-	                bccd = lerp(bc, cd, t),
-	                dest = lerp(abbc, bccd, t);
-	            return [bezierCurve(start, ab, abbc, dest), bezierCurve(dest, bccd, cd, end)];
-	        },
-	        curveTo: function(borderArgs) {
-	            borderArgs.push(["bezierCurve", startControl.x, startControl.y, endControl.x, endControl.y, end.x, end.y]);
-	        },
-	        curveToReversed: function(borderArgs) {
-	            borderArgs.push(["bezierCurve", endControl.x, endControl.y, startControl.x, startControl.y, start.x, start.y]);
-	        }
-	    };
-	}
-
-	function drawSide(borderData, radius1, radius2, outer1, inner1, outer2, inner2) {
-	    var borderArgs = [];
-
-	    if (radius1[0] > 0 || radius1[1] > 0) {
-	        borderArgs.push(["line", outer1[1].start.x, outer1[1].start.y]);
-	        outer1[1].curveTo(borderArgs);
-	    } else {
-	        borderArgs.push([ "line", borderData.c1[0], borderData.c1[1]]);
-	    }
-
-	    if (radius2[0] > 0 || radius2[1] > 0) {
-	        borderArgs.push(["line", outer2[0].start.x, outer2[0].start.y]);
-	        outer2[0].curveTo(borderArgs);
-	        borderArgs.push(["line", inner2[0].end.x, inner2[0].end.y]);
-	        inner2[0].curveToReversed(borderArgs);
-	    } else {
-	        borderArgs.push(["line", borderData.c2[0], borderData.c2[1]]);
-	        borderArgs.push(["line", borderData.c3[0], borderData.c3[1]]);
-	    }
-
-	    if (radius1[0] > 0 || radius1[1] > 0) {
-	        borderArgs.push(["line", inner1[1].end.x, inner1[1].end.y]);
-	        inner1[1].curveToReversed(borderArgs);
-	    } else {
-	        borderArgs.push(["line", borderData.c4[0], borderData.c4[1]]);
-	    }
-
-	    return borderArgs;
-	}
-
-	function parseCorner(borderArgs, radius1, radius2, corner1, corner2, x, y) {
-	    if (radius1[0] > 0 || radius1[1] > 0) {
-	        borderArgs.push(["line", corner1[0].start.x, corner1[0].start.y]);
-	        corner1[0].curveTo(borderArgs);
-	        corner1[1].curveTo(borderArgs);
-	    } else {
-	        borderArgs.push(["line", x, y]);
-	    }
-
-	    if (radius2[0] > 0 || radius2[1] > 0) {
-	        borderArgs.push(["line", corner2[0].start.x, corner2[0].start.y]);
-	    }
-	}
-
-	function negativeZIndex(container) {
-	    return container.cssInt("zIndex") < 0;
-	}
-
-	function positiveZIndex(container) {
-	    return container.cssInt("zIndex") > 0;
-	}
-
-	function zIndex0(container) {
-	    return container.cssInt("zIndex") === 0;
-	}
-
-	function inlineLevel(container) {
-	    return ["inline", "inline-block", "inline-table"].indexOf(container.css("display")) !== -1;
-	}
-
-	function isStackingContext(container) {
-	    return (container instanceof StackingContext);
-	}
-
-	function hasText(container) {
-	    return container.node.data.trim().length > 0;
-	}
-
-	function noLetterSpacing(container) {
-	    return (/^(normal|none|0px)$/.test(container.parent.css("letterSpacing")));
-	}
-
-	function getBorderRadiusData(container) {
-	    return ["TopLeft", "TopRight", "BottomRight", "BottomLeft"].map(function(side) {
-	        var value = container.css('border' + side + 'Radius');
-	        var arr = value.split(" ");
-	        if (arr.length <= 1) {
-	            arr[1] = arr[0];
-	        }
-	        return arr.map(asInt);
-	    });
-	}
-
-	function renderableNode(node) {
-	    return (node.nodeType === Node.TEXT_NODE || node.nodeType === Node.ELEMENT_NODE);
-	}
-
-	function isPositionedForStacking(container) {
-	    var position = container.css("position");
-	    var zIndex = (["absolute", "relative", "fixed"].indexOf(position) !== -1) ? container.css("zIndex") : "auto";
-	    return zIndex !== "auto";
-	}
-
-	function isPositioned(container) {
-	    return container.css("position") !== "static";
-	}
-
-	function isFloating(container) {
-	    return container.css("float") !== "none";
-	}
-
-	function isInlineBlock(container) {
-	    return ["inline-block", "inline-table"].indexOf(container.css("display")) !== -1;
-	}
-
-	function not(callback) {
-	    var context = this;
-	    return function() {
-	        return !callback.apply(context, arguments);
-	    };
-	}
-
-	function isElement(container) {
-	    return container.node.nodeType === Node.ELEMENT_NODE;
-	}
-
-	function isPseudoElement(container) {
-	    return container.isPseudoElement === true;
-	}
-
-	function isTextNode(container) {
-	    return container.node.nodeType === Node.TEXT_NODE;
-	}
-
-	function zIndexSort(contexts) {
-	    return function(a, b) {
-	        return (a.cssInt("zIndex") + (contexts.indexOf(a) / contexts.length)) - (b.cssInt("zIndex") + (contexts.indexOf(b) / contexts.length));
-	    };
-	}
-
-	function hasOpacity(container) {
-	    return container.getOpacity() < 1;
-	}
-
-	function asInt(value) {
-	    return parseInt(value, 10);
-	}
-
-	function getWidth(border) {
-	    return border.width;
-	}
-
-	function nonIgnoredElement(nodeContainer) {
-	    return (nodeContainer.node.nodeType !== Node.ELEMENT_NODE || ["SCRIPT", "HEAD", "TITLE", "OBJECT", "BR", "OPTION"].indexOf(nodeContainer.node.nodeName) === -1);
-	}
-
-	function flatten(arrays) {
-	    return [].concat.apply([], arrays);
-	}
-
-	function stripQuotes(content) {
-	    var first = content.substr(0, 1);
-	    return (first === content.substr(content.length - 1) && first.match(/'|"/)) ? content.substr(1, content.length - 2) : content;
-	}
-
-	function getWords(characters) {
-	    var words = [], i = 0, onWordBoundary = false, word;
-	    while(characters.length) {
-	        if (isWordBoundary(characters[i]) === onWordBoundary) {
-	            word = characters.splice(0, i);
-	            if (word.length) {
-	                words.push(punycode.ucs2.encode(word));
-	            }
-	            onWordBoundary =! onWordBoundary;
-	            i = 0;
-	        } else {
-	            i++;
-	        }
-
-	        if (i >= characters.length) {
-	            word = characters.splice(0, i);
-	            if (word.length) {
-	                words.push(punycode.ucs2.encode(word));
-	            }
-	        }
-	    }
-	    return words;
-	}
-
-	function isWordBoundary(characterCode) {
-	    return [
-	        32, // <space>
-	        13, // \r
-	        10, // \n
-	        9, // \t
-	        45 // -
-	    ].indexOf(characterCode) !== -1;
-	}
-
-	function hasUnicode(string) {
-	    return (/[^\u0000-\u00ff]/).test(string);
-	}
-
-	module.exports = NodeParser;
-
-	},{"./color":3,"./fontmetrics":7,"./log":13,"./nodecontainer":14,"./pseudoelementcontainer":18,"./stackingcontext":21,"./textcontainer":25,"./utils":26,"punycode":1}],16:[function(_dereq_,module,exports){
-	var XHR = _dereq_('./xhr');
-	var utils = _dereq_('./utils');
-	var log = _dereq_('./log');
-	var createWindowClone = _dereq_('./clone');
-	var decode64 = utils.decode64;
-
-	function Proxy(src, proxyUrl, document) {
-	    var supportsCORS = ('withCredentials' in new XMLHttpRequest());
-	    if (!proxyUrl) {
-	        return Promise.reject("No proxy configured");
-	    }
-	    var callback = createCallback(supportsCORS);
-	    var url = createProxyUrl(proxyUrl, src, callback);
-
-	    return supportsCORS ? XHR(url) : (jsonp(document, url, callback).then(function(response) {
-	        return decode64(response.content);
-	    }));
-	}
-	var proxyCount = 0;
-
-	function ProxyURL(src, proxyUrl, document) {
-	    var supportsCORSImage = ('crossOrigin' in new Image());
-	    var callback = createCallback(supportsCORSImage);
-	    var url = createProxyUrl(proxyUrl, src, callback);
-	    return (supportsCORSImage ? Promise.resolve(url) : jsonp(document, url, callback).then(function(response) {
-	        return "data:" + response.type + ";base64," + response.content;
-	    }));
-	}
-
-	function jsonp(document, url, callback) {
-	    return new Promise(function(resolve, reject) {
-	        var s = document.createElement("script");
-	        var cleanup = function() {
-	            delete window.html2canvas.proxy[callback];
-	            document.body.removeChild(s);
-	        };
-	        window.html2canvas.proxy[callback] = function(response) {
-	            cleanup();
-	            resolve(response);
-	        };
-	        s.src = url;
-	        s.onerror = function(e) {
-	            cleanup();
-	            reject(e);
-	        };
-	        document.body.appendChild(s);
-	    });
-	}
-
-	function createCallback(useCORS) {
-	    return !useCORS ? "html2canvas_" + Date.now() + "_" + (++proxyCount) + "_" + Math.round(Math.random() * 100000) : "";
-	}
-
-	function createProxyUrl(proxyUrl, src, callback) {
-	    return proxyUrl + "?url=" + encodeURIComponent(src) + (callback.length ? "&callback=html2canvas.proxy." + callback : "");
-	}
-
-	function documentFromHTML(src) {
-	    return function(html) {
-	        var parser = new DOMParser(), doc;
-	        try {
-	            doc = parser.parseFromString(html, "text/html");
-	        } catch(e) {
-	            log("DOMParser not supported, falling back to createHTMLDocument");
-	            doc = document.implementation.createHTMLDocument("");
-	            try {
-	                doc.open();
-	                doc.write(html);
-	                doc.close();
-	            } catch(ee) {
-	                log("createHTMLDocument write not supported, falling back to document.body.innerHTML");
-	                doc.body.innerHTML = html; // ie9 doesnt support writing to documentElement
-	            }
-	        }
-
-	        var b = doc.querySelector("base");
-	        if (!b || !b.href.host) {
-	            var base = doc.createElement("base");
-	            base.href = src;
-	            doc.head.insertBefore(base, doc.head.firstChild);
-	        }
-
-	        return doc;
-	    };
-	}
-
-	function loadUrlDocument(src, proxy, document, width, height, options) {
-	    return new Proxy(src, proxy, window.document).then(documentFromHTML(src)).then(function(doc) {
-	        return createWindowClone(doc, document, width, height, options, 0, 0);
-	    });
-	}
-
-	exports.Proxy = Proxy;
-	exports.ProxyURL = ProxyURL;
-	exports.loadUrlDocument = loadUrlDocument;
-
-	},{"./clone":2,"./log":13,"./utils":26,"./xhr":28}],17:[function(_dereq_,module,exports){
-	var ProxyURL = _dereq_('./proxy').ProxyURL;
-
-	function ProxyImageContainer(src, proxy) {
-	    var link = document.createElement("a");
-	    link.href = src;
-	    src = link.href;
-	    this.src = src;
-	    this.image = new Image();
-	    var self = this;
-	    this.promise = new Promise(function(resolve, reject) {
-	        self.image.crossOrigin = "Anonymous";
-	        self.image.onload = resolve;
-	        self.image.onerror = reject;
-
-	        new ProxyURL(src, proxy, document).then(function(url) {
-	            self.image.src = url;
-	        })['catch'](reject);
-	    });
-	}
-
-	module.exports = ProxyImageContainer;
-
-	},{"./proxy":16}],18:[function(_dereq_,module,exports){
-	var NodeContainer = _dereq_('./nodecontainer');
-
-	function PseudoElementContainer(node, parent, type) {
-	    NodeContainer.call(this, node, parent);
-	    this.isPseudoElement = true;
-	    this.before = type === ":before";
-	}
-
-	PseudoElementContainer.prototype.cloneTo = function(stack) {
-	    PseudoElementContainer.prototype.cloneTo.call(this, stack);
-	    stack.isPseudoElement = true;
-	    stack.before = this.before;
-	};
-
-	PseudoElementContainer.prototype = Object.create(NodeContainer.prototype);
-
-	PseudoElementContainer.prototype.appendToDOM = function() {
-	    if (this.before) {
-	        this.parent.node.insertBefore(this.node, this.parent.node.firstChild);
-	    } else {
-	        this.parent.node.appendChild(this.node);
-	    }
-	    this.parent.node.className += " " + this.getHideClass();
-	};
-
-	PseudoElementContainer.prototype.cleanDOM = function() {
-	    this.node.parentNode.removeChild(this.node);
-	    this.parent.node.className = this.parent.node.className.replace(this.getHideClass(), "");
-	};
-
-	PseudoElementContainer.prototype.getHideClass = function() {
-	    return this["PSEUDO_HIDE_ELEMENT_CLASS_" + (this.before ? "BEFORE" : "AFTER")];
-	};
-
-	PseudoElementContainer.prototype.PSEUDO_HIDE_ELEMENT_CLASS_BEFORE = "___html2canvas___pseudoelement_before";
-	PseudoElementContainer.prototype.PSEUDO_HIDE_ELEMENT_CLASS_AFTER = "___html2canvas___pseudoelement_after";
-
-	module.exports = PseudoElementContainer;
-
-	},{"./nodecontainer":14}],19:[function(_dereq_,module,exports){
-	var log = _dereq_('./log');
-
-	function Renderer(width, height, images, options, document) {
-	    this.width = width;
-	    this.height = height;
-	    this.images = images;
-	    this.options = options;
-	    this.document = document;
-	}
-
-	Renderer.prototype.renderImage = function(container, bounds, borderData, imageContainer) {
-	    var paddingLeft = container.cssInt('paddingLeft'),
-	        paddingTop = container.cssInt('paddingTop'),
-	        paddingRight = container.cssInt('paddingRight'),
-	        paddingBottom = container.cssInt('paddingBottom'),
-	        borders = borderData.borders;
-
-	    var width = bounds.width - (borders[1].width + borders[3].width + paddingLeft + paddingRight);
-	    var height = bounds.height - (borders[0].width + borders[2].width + paddingTop + paddingBottom);
-	    this.drawImage(
-	        imageContainer,
-	        0,
-	        0,
-	        imageContainer.image.width || width,
-	        imageContainer.image.height || height,
-	        bounds.left + paddingLeft + borders[3].width,
-	        bounds.top + paddingTop + borders[0].width,
-	        width,
-	        height
-	    );
-	};
-
-	Renderer.prototype.renderBackground = function(container, bounds, borderData) {
-	    if (bounds.height > 0 && bounds.width > 0) {
-	        this.renderBackgroundColor(container, bounds);
-	        this.renderBackgroundImage(container, bounds, borderData);
-	    }
-	};
-
-	Renderer.prototype.renderBackgroundColor = function(container, bounds) {
-	    var color = container.color("backgroundColor");
-	    if (!color.isTransparent()) {
-	        this.rectangle(bounds.left, bounds.top, bounds.width, bounds.height, color);
-	    }
-	};
-
-	Renderer.prototype.renderBorders = function(borders) {
-	    borders.forEach(this.renderBorder, this);
-	};
-
-	Renderer.prototype.renderBorder = function(data) {
-	    if (!data.color.isTransparent() && data.args !== null) {
-	        this.drawShape(data.args, data.color);
-	    }
-	};
-
-	Renderer.prototype.renderBackgroundImage = function(container, bounds, borderData) {
-	    var backgroundImages = container.parseBackgroundImages();
-	    backgroundImages.reverse().forEach(function(backgroundImage, index, arr) {
-	        switch(backgroundImage.method) {
-	        case "url":
-	            var image = this.images.get(backgroundImage.args[0]);
-	            if (image) {
-	                this.renderBackgroundRepeating(container, bounds, image, arr.length - (index+1), borderData);
-	            } else {
-	                log("Error loading background-image", backgroundImage.args[0]);
-	            }
-	            break;
-	        case "linear-gradient":
-	        case "gradient":
-	            var gradientImage = this.images.get(backgroundImage.value);
-	            if (gradientImage) {
-	                this.renderBackgroundGradient(gradientImage, bounds, borderData);
-	            } else {
-	                log("Error loading background-image", backgroundImage.args[0]);
-	            }
-	            break;
-	        case "none":
-	            break;
-	        default:
-	            log("Unknown background-image type", backgroundImage.args[0]);
-	        }
-	    }, this);
-	};
-
-	Renderer.prototype.renderBackgroundRepeating = function(container, bounds, imageContainer, index, borderData) {
-	    var size = container.parseBackgroundSize(bounds, imageContainer.image, index);
-	    var position = container.parseBackgroundPosition(bounds, imageContainer.image, index, size);
-	    var repeat = container.parseBackgroundRepeat(index);
-	    switch (repeat) {
-	    case "repeat-x":
-	    case "repeat no-repeat":
-	        this.backgroundRepeatShape(imageContainer, position, size, bounds, bounds.left + borderData[3], bounds.top + position.top + borderData[0], 99999, size.height, borderData);
-	        break;
-	    case "repeat-y":
-	    case "no-repeat repeat":
-	        this.backgroundRepeatShape(imageContainer, position, size, bounds, bounds.left + position.left + borderData[3], bounds.top + borderData[0], size.width, 99999, borderData);
-	        break;
-	    case "no-repeat":
-	        this.backgroundRepeatShape(imageContainer, position, size, bounds, bounds.left + position.left + borderData[3], bounds.top + position.top + borderData[0], size.width, size.height, borderData);
-	        break;
-	    default:
-	        this.renderBackgroundRepeat(imageContainer, position, size, {top: bounds.top, left: bounds.left}, borderData[3], borderData[0]);
-	        break;
-	    }
-	};
-
-	module.exports = Renderer;
-
-	},{"./log":13}],20:[function(_dereq_,module,exports){
-	var Renderer = _dereq_('../renderer');
-	var LinearGradientContainer = _dereq_('../lineargradientcontainer');
-	var log = _dereq_('../log');
-
-	function CanvasRenderer(width, height) {
-	    Renderer.apply(this, arguments);
-	    this.canvas = this.options.canvas || this.document.createElement("canvas");
-	    if (!this.options.canvas) {
-	        this.canvas.width = width;
-	        this.canvas.height = height;
-	    }
-	    this.ctx = this.canvas.getContext("2d");
-	    this.taintCtx = this.document.createElement("canvas").getContext("2d");
-	    this.ctx.textBaseline = "bottom";
-	    this.variables = {};
-	    log("Initialized CanvasRenderer with size", width, "x", height);
-	}
-
-	CanvasRenderer.prototype = Object.create(Renderer.prototype);
-
-	CanvasRenderer.prototype.setFillStyle = function(fillStyle) {
-	    this.ctx.fillStyle = typeof(fillStyle) === "object" && !!fillStyle.isColor ? fillStyle.toString() : fillStyle;
-	    return this.ctx;
-	};
-
-	CanvasRenderer.prototype.rectangle = function(left, top, width, height, color) {
-	    this.setFillStyle(color).fillRect(left, top, width, height);
-	};
-
-	CanvasRenderer.prototype.circle = function(left, top, size, color) {
-	    this.setFillStyle(color);
-	    this.ctx.beginPath();
-	    this.ctx.arc(left + size / 2, top + size / 2, size / 2, 0, Math.PI*2, true);
-	    this.ctx.closePath();
-	    this.ctx.fill();
-	};
-
-	CanvasRenderer.prototype.circleStroke = function(left, top, size, color, stroke, strokeColor) {
-	    this.circle(left, top, size, color);
-	    this.ctx.strokeStyle = strokeColor.toString();
-	    this.ctx.stroke();
-	};
-
-	CanvasRenderer.prototype.drawShape = function(shape, color) {
-	    this.shape(shape);
-	    this.setFillStyle(color).fill();
-	};
-
-	CanvasRenderer.prototype.taints = function(imageContainer) {
-	    if (imageContainer.tainted === null) {
-	        this.taintCtx.drawImage(imageContainer.image, 0, 0);
-	        try {
-	            this.taintCtx.getImageData(0, 0, 1, 1);
-	            imageContainer.tainted = false;
-	        } catch(e) {
-	            this.taintCtx = document.createElement("canvas").getContext("2d");
-	            imageContainer.tainted = true;
-	        }
-	    }
-
-	    return imageContainer.tainted;
-	};
-
-	CanvasRenderer.prototype.drawImage = function(imageContainer, sx, sy, sw, sh, dx, dy, dw, dh) {
-	    if (!this.taints(imageContainer) || this.options.allowTaint) {
-	        this.ctx.drawImage(imageContainer.image, sx, sy, sw, sh, dx, dy, dw, dh);
-	    }
-	};
-
-	CanvasRenderer.prototype.clip = function(shapes, callback, context) {
-	    this.ctx.save();
-	    shapes.filter(hasEntries).forEach(function(shape) {
-	        this.shape(shape).clip();
-	    }, this);
-	    callback.call(context);
-	    this.ctx.restore();
-	};
-
-	CanvasRenderer.prototype.shape = function(shape) {
-	    this.ctx.beginPath();
-	    shape.forEach(function(point, index) {
-	        if (point[0] === "rect") {
-	            this.ctx.rect.apply(this.ctx, point.slice(1));
-	        } else {
-	            this.ctx[(index === 0) ? "moveTo" : point[0] + "To" ].apply(this.ctx, point.slice(1));
-	        }
-	    }, this);
-	    this.ctx.closePath();
-	    return this.ctx;
-	};
-
-	CanvasRenderer.prototype.font = function(color, style, variant, weight, size, family) {
-	    this.setFillStyle(color).font = [style, variant, weight, size, family].join(" ").split(",")[0];
-	};
-
-	CanvasRenderer.prototype.fontShadow = function(color, offsetX, offsetY, blur) {
-	    this.setVariable("shadowColor", color.toString())
-	        .setVariable("shadowOffsetY", offsetX)
-	        .setVariable("shadowOffsetX", offsetY)
-	        .setVariable("shadowBlur", blur);
-	};
-
-	CanvasRenderer.prototype.clearShadow = function() {
-	    this.setVariable("shadowColor", "rgba(0,0,0,0)");
-	};
-
-	CanvasRenderer.prototype.setOpacity = function(opacity) {
-	    this.ctx.globalAlpha = opacity;
-	};
-
-	CanvasRenderer.prototype.setTransform = function(transform) {
-	    this.ctx.translate(transform.origin[0], transform.origin[1]);
-	    this.ctx.transform.apply(this.ctx, transform.matrix);
-	    this.ctx.translate(-transform.origin[0], -transform.origin[1]);
-	};
-
-	CanvasRenderer.prototype.setVariable = function(property, value) {
-	    if (this.variables[property] !== value) {
-	        this.variables[property] = this.ctx[property] = value;
-	    }
-
-	    return this;
-	};
-
-	CanvasRenderer.prototype.text = function(text, left, bottom) {
-	    this.ctx.fillText(text, left, bottom);
-	};
-
-	CanvasRenderer.prototype.backgroundRepeatShape = function(imageContainer, backgroundPosition, size, bounds, left, top, width, height, borderData) {
-	    var shape = [
-	        ["line", Math.round(left), Math.round(top)],
-	        ["line", Math.round(left + width), Math.round(top)],
-	        ["line", Math.round(left + width), Math.round(height + top)],
-	        ["line", Math.round(left), Math.round(height + top)]
-	    ];
-	    this.clip([shape], function() {
-	        this.renderBackgroundRepeat(imageContainer, backgroundPosition, size, bounds, borderData[3], borderData[0]);
-	    }, this);
-	};
-
-	CanvasRenderer.prototype.renderBackgroundRepeat = function(imageContainer, backgroundPosition, size, bounds, borderLeft, borderTop) {
-	    var offsetX = Math.round(bounds.left + backgroundPosition.left + borderLeft), offsetY = Math.round(bounds.top + backgroundPosition.top + borderTop);
-	    this.setFillStyle(this.ctx.createPattern(this.resizeImage(imageContainer, size), "repeat"));
-	    this.ctx.translate(offsetX, offsetY);
-	    this.ctx.fill();
-	    this.ctx.translate(-offsetX, -offsetY);
-	};
-
-	CanvasRenderer.prototype.renderBackgroundGradient = function(gradientImage, bounds) {
-	    if (gradientImage instanceof LinearGradientContainer) {
-	        var gradient = this.ctx.createLinearGradient(
-	            bounds.left + bounds.width * gradientImage.x0,
-	            bounds.top + bounds.height * gradientImage.y0,
-	            bounds.left +  bounds.width * gradientImage.x1,
-	            bounds.top +  bounds.height * gradientImage.y1);
-	        gradientImage.colorStops.forEach(function(colorStop) {
-	            gradient.addColorStop(colorStop.stop, colorStop.color.toString());
-	        });
-	        this.rectangle(bounds.left, bounds.top, bounds.width, bounds.height, gradient);
-	    }
-	};
-
-	CanvasRenderer.prototype.resizeImage = function(imageContainer, size) {
-	    var image = imageContainer.image;
-	    if(image.width === size.width && image.height === size.height) {
-	        return image;
-	    }
-
-	    var ctx, canvas = document.createElement('canvas');
-	    canvas.width = size.width;
-	    canvas.height = size.height;
-	    ctx = canvas.getContext("2d");
-	    ctx.drawImage(image, 0, 0, image.width, image.height, 0, 0, size.width, size.height );
-	    return canvas;
-	};
-
-	function hasEntries(array) {
-	    return array.length > 0;
-	}
-
-	module.exports = CanvasRenderer;
-
-	},{"../lineargradientcontainer":12,"../log":13,"../renderer":19}],21:[function(_dereq_,module,exports){
-	var NodeContainer = _dereq_('./nodecontainer');
-
-	function StackingContext(hasOwnStacking, opacity, element, parent) {
-	    NodeContainer.call(this, element, parent);
-	    this.ownStacking = hasOwnStacking;
-	    this.contexts = [];
-	    this.children = [];
-	    this.opacity = (this.parent ? this.parent.stack.opacity : 1) * opacity;
-	}
-
-	StackingContext.prototype = Object.create(NodeContainer.prototype);
-
-	StackingContext.prototype.getParentStack = function(context) {
-	    var parentStack = (this.parent) ? this.parent.stack : null;
-	    return parentStack ? (parentStack.ownStacking ? parentStack : parentStack.getParentStack(context)) : context.stack;
-	};
-
-	module.exports = StackingContext;
-
-	},{"./nodecontainer":14}],22:[function(_dereq_,module,exports){
-	function Support(document) {
-	    this.rangeBounds = this.testRangeBounds(document);
-	    this.cors = this.testCORS();
-	    this.svg = this.testSVG();
-	}
-
-	Support.prototype.testRangeBounds = function(document) {
-	    var range, testElement, rangeBounds, rangeHeight, support = false;
-
-	    if (document.createRange) {
-	        range = document.createRange();
-	        if (range.getBoundingClientRect) {
-	            testElement = document.createElement('boundtest');
-	            testElement.style.height = "123px";
-	            testElement.style.display = "block";
-	            document.body.appendChild(testElement);
-
-	            range.selectNode(testElement);
-	            rangeBounds = range.getBoundingClientRect();
-	            rangeHeight = rangeBounds.height;
-
-	            if (rangeHeight === 123) {
-	                support = true;
-	            }
-	            document.body.removeChild(testElement);
-	        }
-	    }
-
-	    return support;
-	};
-
-	Support.prototype.testCORS = function() {
-	    return typeof((new Image()).crossOrigin) !== "undefined";
-	};
-
-	Support.prototype.testSVG = function() {
-	    var img = new Image();
-	    var canvas = document.createElement("canvas");
-	    var ctx =  canvas.getContext("2d");
-	    img.src = "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg'></svg>";
-
-	    try {
-	        ctx.drawImage(img, 0, 0);
-	        canvas.toDataURL();
-	    } catch(e) {
-	        return false;
-	    }
-	    return true;
-	};
-
-	module.exports = Support;
-
-	},{}],23:[function(_dereq_,module,exports){
-	var XHR = _dereq_('./xhr');
-	var decode64 = _dereq_('./utils').decode64;
-
-	function SVGContainer(src) {
-	    this.src = src;
-	    this.image = null;
-	    var self = this;
-
-	    this.promise = this.hasFabric().then(function() {
-	        return (self.isInline(src) ? Promise.resolve(self.inlineFormatting(src)) : XHR(src));
-	    }).then(function(svg) {
-	        return new Promise(function(resolve) {
-	            window.html2canvas.svg.fabric.loadSVGFromString(svg, self.createCanvas.call(self, resolve));
-	        });
-	    });
-	}
-
-	SVGContainer.prototype.hasFabric = function() {
-	    return !window.html2canvas.svg || !window.html2canvas.svg.fabric ? Promise.reject(new Error("html2canvas.svg.js is not loaded, cannot render svg")) : Promise.resolve();
-	};
-
-	SVGContainer.prototype.inlineFormatting = function(src) {
-	    return (/^data:image\/svg\+xml;base64,/.test(src)) ? this.decode64(this.removeContentType(src)) : this.removeContentType(src);
-	};
-
-	SVGContainer.prototype.removeContentType = function(src) {
-	    return src.replace(/^data:image\/svg\+xml(;base64)?,/,'');
-	};
-
-	SVGContainer.prototype.isInline = function(src) {
-	    return (/^data:image\/svg\+xml/i.test(src));
-	};
-
-	SVGContainer.prototype.createCanvas = function(resolve) {
-	    var self = this;
-	    return function (objects, options) {
-	        var canvas = new window.html2canvas.svg.fabric.StaticCanvas('c');
-	        self.image = canvas.lowerCanvasEl;
-	        canvas
-	            .setWidth(options.width)
-	            .setHeight(options.height)
-	            .add(window.html2canvas.svg.fabric.util.groupSVGElements(objects, options))
-	            .renderAll();
-	        resolve(canvas.lowerCanvasEl);
-	    };
-	};
-
-	SVGContainer.prototype.decode64 = function(str) {
-	    return (typeof(window.atob) === "function") ? window.atob(str) : decode64(str);
-	};
-
-	module.exports = SVGContainer;
-
-	},{"./utils":26,"./xhr":28}],24:[function(_dereq_,module,exports){
-	var SVGContainer = _dereq_('./svgcontainer');
-
-	function SVGNodeContainer(node, _native) {
-	    this.src = node;
-	    this.image = null;
-	    var self = this;
-
-	    this.promise = _native ? new Promise(function(resolve, reject) {
-	        self.image = new Image();
-	        self.image.onload = resolve;
-	        self.image.onerror = reject;
-	        self.image.src = "data:image/svg+xml," + (new XMLSerializer()).serializeToString(node);
-	        if (self.image.complete === true) {
-	            resolve(self.image);
-	        }
-	    }) : this.hasFabric().then(function() {
-	        return new Promise(function(resolve) {
-	            window.html2canvas.svg.fabric.parseSVGDocument(node, self.createCanvas.call(self, resolve));
-	        });
-	    });
-	}
-
-	SVGNodeContainer.prototype = Object.create(SVGContainer.prototype);
-
-	module.exports = SVGNodeContainer;
-
-	},{"./svgcontainer":23}],25:[function(_dereq_,module,exports){
-	var NodeContainer = _dereq_('./nodecontainer');
-
-	function TextContainer(node, parent) {
-	    NodeContainer.call(this, node, parent);
-	}
-
-	TextContainer.prototype = Object.create(NodeContainer.prototype);
-
-	TextContainer.prototype.applyTextTransform = function() {
-	    this.node.data = this.transform(this.parent.css("textTransform"));
-	};
-
-	TextContainer.prototype.transform = function(transform) {
-	    var text = this.node.data;
-	    switch(transform){
-	        case "lowercase":
-	            return text.toLowerCase();
-	        case "capitalize":
-	            return text.replace(/(^|\s|:|-|\(|\))([a-z])/g, capitalize);
-	        case "uppercase":
-	            return text.toUpperCase();
-	        default:
-	            return text;
-	    }
-	};
-
-	function capitalize(m, p1, p2) {
-	    if (m.length > 0) {
-	        return p1 + p2.toUpperCase();
-	    }
-	}
-
-	module.exports = TextContainer;
-
-	},{"./nodecontainer":14}],26:[function(_dereq_,module,exports){
-	exports.smallImage = function smallImage() {
-	    return "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
-	};
-
-	exports.bind = function(callback, context) {
-	    return function() {
-	        return callback.apply(context, arguments);
-	    };
-	};
-
-	/*
-	 * base64-arraybuffer
-	 * https://github.com/niklasvh/base64-arraybuffer
-	 *
-	 * Copyright (c) 2012 Niklas von Hertzen
-	 * Licensed under the MIT license.
-	 */
-
-	exports.decode64 = function(base64) {
-	    var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-	    var len = base64.length, i, encoded1, encoded2, encoded3, encoded4, byte1, byte2, byte3;
-
-	    var output = "";
-
-	    for (i = 0; i < len; i+=4) {
-	        encoded1 = chars.indexOf(base64[i]);
-	        encoded2 = chars.indexOf(base64[i+1]);
-	        encoded3 = chars.indexOf(base64[i+2]);
-	        encoded4 = chars.indexOf(base64[i+3]);
-
-	        byte1 = (encoded1 << 2) | (encoded2 >> 4);
-	        byte2 = ((encoded2 & 15) << 4) | (encoded3 >> 2);
-	        byte3 = ((encoded3 & 3) << 6) | encoded4;
-	        if (encoded3 === 64) {
-	            output += String.fromCharCode(byte1);
-	        } else if (encoded4 === 64 || encoded4 === -1) {
-	            output += String.fromCharCode(byte1, byte2);
-	        } else{
-	            output += String.fromCharCode(byte1, byte2, byte3);
-	        }
-	    }
-
-	    return output;
-	};
-
-	exports.getBounds = function(node) {
-	    if (node.getBoundingClientRect) {
-	        var clientRect = node.getBoundingClientRect();
-	        var width = node.offsetWidth == null ? clientRect.width : node.offsetWidth;
-	        return {
-	            top: clientRect.top,
-	            bottom: clientRect.bottom || (clientRect.top + clientRect.height),
-	            right: clientRect.left + width,
-	            left: clientRect.left,
-	            width:  width,
-	            height: node.offsetHeight == null ? clientRect.height : node.offsetHeight
-	        };
-	    }
-	    return {};
-	};
-
-	exports.offsetBounds = function(node) {
-	    var parent = node.offsetParent ? exports.offsetBounds(node.offsetParent) : {top: 0, left: 0};
-
-	    return {
-	        top: node.offsetTop + parent.top,
-	        bottom: node.offsetTop + node.offsetHeight + parent.top,
-	        right: node.offsetLeft + parent.left + node.offsetWidth,
-	        left: node.offsetLeft + parent.left,
-	        width: node.offsetWidth,
-	        height: node.offsetHeight
-	    };
-	};
-
-	exports.parseBackgrounds = function(backgroundImage) {
-	    var whitespace = ' \r\n\t',
-	        method, definition, prefix, prefix_i, block, results = [],
-	        mode = 0, numParen = 0, quote, args;
-	    var appendResult = function() {
-	        if(method) {
-	            if (definition.substr(0, 1) === '"') {
-	                definition = definition.substr(1, definition.length - 2);
-	            }
-	            if (definition) {
-	                args.push(definition);
-	            }
-	            if (method.substr(0, 1) === '-' && (prefix_i = method.indexOf('-', 1 ) + 1) > 0) {
-	                prefix = method.substr(0, prefix_i);
-	                method = method.substr(prefix_i);
-	            }
-	            results.push({
-	                prefix: prefix,
-	                method: method.toLowerCase(),
-	                value: block,
-	                args: args,
-	                image: null
-	            });
-	        }
-	        args = [];
-	        method = prefix = definition = block = '';
-	    };
-	    args = [];
-	    method = prefix = definition = block = '';
-	    backgroundImage.split("").forEach(function(c) {
-	        if (mode === 0 && whitespace.indexOf(c) > -1) {
-	            return;
-	        }
-	        switch(c) {
-	        case '"':
-	            if(!quote) {
-	                quote = c;
-	            } else if(quote === c) {
-	                quote = null;
-	            }
-	            break;
-	        case '(':
-	            if(quote) {
-	                break;
-	            } else if(mode === 0) {
-	                mode = 1;
-	                block += c;
-	                return;
-	            } else {
-	                numParen++;
-	            }
-	            break;
-	        case ')':
-	            if (quote) {
-	                break;
-	            } else if(mode === 1) {
-	                if(numParen === 0) {
-	                    mode = 0;
-	                    block += c;
-	                    appendResult();
-	                    return;
-	                } else {
-	                    numParen--;
-	                }
-	            }
-	            break;
-
-	        case ',':
-	            if (quote) {
-	                break;
-	            } else if(mode === 0) {
-	                appendResult();
-	                return;
-	            } else if (mode === 1) {
-	                if (numParen === 0 && !method.match(/^url$/i)) {
-	                    args.push(definition);
-	                    definition = '';
-	                    block += c;
-	                    return;
-	                }
-	            }
-	            break;
-	        }
-
-	        block += c;
-	        if (mode === 0) {
-	            method += c;
-	        } else {
-	            definition += c;
-	        }
-	    });
-
-	    appendResult();
-	    return results;
-	};
-
-	},{}],27:[function(_dereq_,module,exports){
-	var GradientContainer = _dereq_('./gradientcontainer');
-
-	function WebkitGradientContainer(imageData) {
-	    GradientContainer.apply(this, arguments);
-	    this.type = imageData.args[0] === "linear" ? GradientContainer.TYPES.LINEAR : GradientContainer.TYPES.RADIAL;
-	}
-
-	WebkitGradientContainer.prototype = Object.create(GradientContainer.prototype);
-
-	module.exports = WebkitGradientContainer;
-
-	},{"./gradientcontainer":9}],28:[function(_dereq_,module,exports){
-	function XHR(url) {
-	    return new Promise(function(resolve, reject) {
-	        var xhr = new XMLHttpRequest();
-	        xhr.open('GET', url);
-
-	        xhr.onload = function() {
-	            if (xhr.status === 200) {
-	                resolve(xhr.responseText);
-	            } else {
-	                reject(new Error(xhr.statusText));
-	            }
-	        };
-
-	        xhr.onerror = function() {
-	            reject(new Error("Network Error"));
-	        };
-
-	        xhr.send();
-	    });
-	}
-
-	module.exports = XHR;
-
-	},{}]},{},[4])(4)
-	});
-	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
-
-/***/ },
-/* 385 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var map = {
-		"./birdjerseylarge.png": 190,
-		"./dirkjerseylarge.png": 199,
-		"./duncanjerseylarge.png": 204,
-		"./durantjerseylarge.png": 209,
-		"./dwadejerseylarge.png": 214,
-		"./elginjerseylarge.png": 219,
-		"./hakeemjerseylarge.png": 224,
-		"./jordanjerseylarge.png": 236,
-		"./kareemjerseylarge.png": 244,
-		"./kgjerseylarge.png": 249,
-		"./kobejerseylarge.png": 254,
-		"./lebronjerseylarge.png": 260,
-		"./magicjerseylarge.png": 268,
-		"./mailmanjerseylarge.png": 272,
-		"./mosesjerseylarge.png": 278,
-		"./nashjerseylarge.png": 283,
-		"./oscarjerseylarge.png": 291,
-		"./russelljerseylarge.png": 300,
-		"./shaqjerseylarge.png": 305,
-		"./stephjerseylarge.png": 312,
-		"./westjerseylarge.png": 326,
-		"./wiltjerseylarge.png": 332
-	};
-	function webpackContext(req) {
-		return __webpack_require__(webpackContextResolve(req));
-	};
-	function webpackContextResolve(req) {
-		return map[req] || (function() { throw new Error("Cannot find module '" + req + "'.") }());
-	};
-	webpackContext.keys = function webpackContextKeys() {
-		return Object.keys(map);
-	};
-	webpackContext.resolve = webpackContextResolve;
-	module.exports = webpackContext;
-	webpackContext.id = 385;
-
 
 /***/ }
 /******/ ]);
