@@ -322,7 +322,7 @@ var PlayerVisualization = React.createClass({
 	render: function() {
 		return (
 			<div className="individualPlayerViz">
-				<PlayerProfile player={this.props.playerData.name} nickname={this.props.playerData.nickname} pics={this.props.playerData.pics} />
+				<PlayerProfile player={this.props.playerData.name} nickname={this.props.playerData.nickname} pics={this.props.playerData.pics} images={this.props.images} />
 				<div className="individualPlayerVizInfo">
 					{this.createPlayerVisualization(this.props.playerData)}
 
@@ -529,10 +529,11 @@ var PlayerAwards = React.createClass({
 
 var PlayerProfile = React.createClass({
 	getRandomPic: function() {
-		var position = Math.floor(Math.random()* this.props.pics.length) +1;
-		var imgName = './img/'+this.props.nickname+'trans'+(position)+'.png';
-		var src = require(imgName);
-		return src;
+		var position = Math.floor(Math.random()* this.props.pics.length);
+		// var imgName = './img/'+this.props.nickname+'trans'+(position)+'.png';
+		// var src = require(imgName);
+		// return src;
+		return this.props.images[this.props.nickname][position];
 	},
 
 	render: function() {
@@ -591,7 +592,7 @@ var Visualization = React.createClass({
 		var playersCharts = this.props.players.map(function(player) {
 			var playerData = self.getPlayerData(player)
 			return (
-				<PlayerVisualization playerData={playerData} mode={self.props.mode} key={player} timespan={timespan} />
+				<PlayerVisualization playerData={playerData} mode={self.props.mode} key={player} timespan={timespan} images={self.props.images} />
 			);
 		});
 
