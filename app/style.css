@@ -131,7 +131,8 @@ div#jerseys {
     height: 100px;
     overflow: hidden;
     border-bottom: solid 1px ghostwhite;
-    margin-bottom: 0px;
+    margin-bottom: 5px;
+    padding-bottom: 1px;
 }
 
 div#menu {
@@ -140,7 +141,7 @@ div#menu {
     font-family: helvetica;
     margin-left: 10px;
     /* width: 945px; */
-    font-size: 10px;
+    font-size: 13px;
     /* margin-top: 30px; */
     /* border-radius: 1px; */
     background-color: white;
@@ -159,7 +160,7 @@ div#menu {
     text-align: center;
     /* padding: 18px; */
     /* background-color: white; */
-    border-bottom: solid 3px white;
+    /*border-bottom: solid 3px white;*/
     padding-top: 8px;
     padding-bottom: 9px;
     vertical-align: top;
@@ -172,10 +173,11 @@ div#menu {
 }
 
 #menu div.selected {
-    /* background-color: darkorange; */
-    color: darkorange;
-    /* font-weight: bold; */
-    border-bottom: solid 4px darkorange
+    background-color: darkorange; 
+    color: white;
+    /*color: darkorange;*/
+    /*font-weight: bold; */
+    /*border-bottom: solid 4px darkorange*/
 }
 
 div#helpArea {
@@ -240,7 +242,10 @@ div#vizLegend {
     background-color: white;
     margin-top: 5px;
     margin-left: 8px;
-    /* padding: 3px; */
+    /* border-bottom: solid 2px white; */
+    padding: 2px;
+    padding-bottom: 1px;
+    padding-right: 36px;
 }
 
 div#legendSection {

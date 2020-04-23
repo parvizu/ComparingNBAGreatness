@@ -12,15 +12,14 @@
 
 // !function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');
 
+import React from 'react';
+import ReactDOM from 'react-dom';
+import NBAGreatness from './NBAGreatness';
 
+const data = require('./PlayersData.json');
 
-var React = require('react');
-var ReactDOM = require('react-dom');
-
-var PlayerViz = require('./PlayerViz');
-
-var data = require('./PlayersData.json');
-var playersImages = {};
+// import data from './PlayersData.json';
+let playersImages = {};
 data.sort(function(a, b){
     var p1 = a.name.split(' ')[1],
     	p2 = b.name.split(' ')[1];
@@ -29,7 +28,6 @@ data.sort(function(a, b){
     	p1 = "Johnson";
     if (p2 === "'Magic'")
     	p2 = "Johnson";
-
 
     if(p1 < p2) return -1;
     if(p1 > p2) return 1;
@@ -40,13 +38,13 @@ data.sort(function(a, b){
 data.forEach(function(playerData) {
 	var playerPics = []
 	playerData.pics.forEach(function(pic) {
-		var route = './img/'+pic;
-		playerPics.push(require(route));
+    var route = 'img/'+pic;
+    playerPics.push(route);
 	});
 
 	playersImages[playerData.nickname] = playerPics
 });
 
-require("./style.css");
+import styles from './style.css';
 
-ReactDOM.render(<PlayerViz data={data} images={playersImages}/>, document.body);
+ReactDOM.render(<NBAGreatness data={data} images={playersImages}/>, document.getElementById('app'));
