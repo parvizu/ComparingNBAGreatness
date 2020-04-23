@@ -193,7 +193,7 @@
 		"nickname": "lebron",
 		"age": {
 			"first": 19,
-			"last": 33
+			"last": 35
 		},
 		"awards": {
 			"2004": [],
@@ -210,19 +210,22 @@
 			"2015": ["AS", "AN1"],
 			"2016": ["AS", "AN1"],
 			"2017": ["AS", "AN1"],
-			"2018": []
+			"2018": ["AS", "AN1"],
+			"2019": ["AS", "AN3"],
+			"2020": ["AS"]
 		},
-		"pics":["lebrontrans1.png","lebrontrans2.png","lebrontrans3.png"],
+		"pics":["lebrontrans1.png","lebrontrans2.png","lebrontrans3.png", "lebrontrans4.png"],
 		"teams": [
 			{"team": "cavaliers", "start": 2004, "end": 2010, "careerStart":1, "careerEnd":7},
 			{"team": "heat", "start": 2011, "end": 2014, "careerStart":8, "careerEnd":11},
-			{"team": "cavaliers", "start": 2015, "end": 2018, "careerStart":12, "careerEnd":15}
+			{"team": "cavaliers", "start": 2015, "end": 2018, "careerStart":12, "careerEnd":15},
+			{"team": "lakers", "start": 2019, "end": 2020, "careerStart":16, "careerEnd":17}
 		],
 		"totals": {
 			"MVP": "4",
-			"AN": "13",
+			"AN": "15",
 			"AD": "6",
-			"AS": "13"
+			"AS": "15"
 		},
 		"championships": [2012,2013,2016]
 	},
@@ -231,7 +234,7 @@
 		"nickname": "steph",
 		"age": {
 			"first": 21,
-			"last": 29
+			"last": 31
 		},
 		"awards": {
 			"2010": [],
@@ -242,19 +245,21 @@
 			"2015": ["AS", "AN1", "MVP"],
 			"2016": ["AS", "AN1", "MVP"],
 			"2017": ["AS", "AN2"],
-			"2018": []
+			"2018": ["AS", "AN3"],
+			"2019": ["AS", "AN1"],
+			"2020": []
 		},
 		"pics":["stephtrans1.png","stephtrans2.png","stephtrans3.png"],
 		"teams": [
-			{"team": "warriors", "start": 2010, "end": 2018, "careerStart":1, "careerEnd":9}
+			{"team": "warriors", "start": 2010, "end": 2020, "careerStart":1, "careerEnd":11}
 		],
 		"totals": {
 			"MVP": "2",
-			"AN": "4",
+			"AN": "6",
 			"AD": "0",
-			"AS": "4"
+			"AS": "6"
 		},
-		"championships": [2015,2017]
+		"championships": [2015,2017,2018]
 	},
 	{
 		"name": "Kevin Garnett",
@@ -659,7 +664,7 @@
 		"nickname": "dirk",
 		"age": {
 			"first": 20,
-			"last": 39
+			"last": 40
 		},
 		"awards": {
 			"1999": [],
@@ -681,17 +686,18 @@
 			"2015": ["AS"],
 			"2016": [],
 			"2017": [],
-			"2018": []
+			"2018": [],
+			"2019": ["AS"]
 		},
 		"pics":["dirktrans1.png","dirktrans2.png","dirktrans3.png"],
 		"teams": [
-			{"team": "mavericks", "start": 1999, "end": 2018, "careerStart":1, "careerEnd":20}
+			{"team": "mavericks", "start": 1999, "end": 2019, "careerStart":1, "careerEnd":21}
 		],
 		"totals": {
 			"MVP": "1",
 			"AN": "12",
 			"AD": "0",
-			"AS": "13"
+			"AS": "14"
 		},
 		"championships": [2011]
 	},
@@ -735,7 +741,7 @@
 		"nickname": "dwade",
 		"age": {
 			"first": 22,
-			"last": 36
+			"last": 37
 		},
 		"awards": {
 			"2004": [],
@@ -752,19 +758,21 @@
 			"2015": ["AS"],
 			"2016": ["AS"],
 			"2017": [],
-			"2018": []
+			"2018": [],
+			"2019": ["AS"]
 		},
 		"pics":["dwadetrans1.png","dwadetrans2.png","dwadetrans3.png"],
 		"teams": [
 			{"team": "heat", "start": 2004, "end": 2016, "careerStart":1, "careerEnd":13},
 			{"team": "bulls", "start": 2017, "end": 2017, "careerStart":14, "careerEnd":14},
-			{"team": "cavaliers", "start": 2018, "end": 2018, "careerStart":15, "careerEnd":15}
+			{"team": "cavaliers", "start": 2018, "end": 2018, "careerStart":15, "careerEnd":15},
+			{"team": "heat", "start": 2019, "end": 2019, "careerStart":16, "careerEnd":16}
 		],
 		"totals": {
 			"MVP": "0",
 			"AN": "8",
 			"AD": "3",
-			"AS": "12"
+			"AS": "13"
 		},
 		"championships": [2006,2012,2013]
 	},
@@ -819,7 +827,7 @@
 		"nickname": "durant",
 		"age": {
 			"first": 19,
-			"last": 29
+			"last": 31
 		},
 		"awards": {
 			"2008": [],
@@ -832,20 +840,23 @@
 			"2015": ["AS"],
 			"2016": ["AS", "AN2"],
 			"2017": ["AS", "AN2"],
-			"2018": []
+			"2018": ["AS", "AN1"],
+			"2019": ["AS", "AN2"],
+			"2020": []
 		},
 		"pics":["duranttrans1.png","duranttrans2.png","duranttrans3.png"],
 		"teams": [
 			{"team": "sonics", "start": 2008, "end": 2008, "careerStart":1, "careerEnd":1},
 			{"team": "thunder", "start": 2009, "end": 2016, "careerStart":2, "careerEnd":9},
-			{"team": "warriors", "start": 2017, "end": 2018, "careerStart":10, "careerEnd":11}
+			{"team": "warriors", "start": 2017, "end": 2019, "careerStart":10, "careerEnd":12},
+			{"team": "nets", "start": 2020, "end": 2020, "careerStart":13, "careerEnd":13}
 		],
 		"totals": {
 			"MVP": "1",
-			"AN": "7",
+			"AN": "10",
 			"AD": "0",
-			"AS": "7"
+			"AS": "10"
 		},
-		"championships": [2017]
+		"championships": [2017, 2018]
 	}
 ]

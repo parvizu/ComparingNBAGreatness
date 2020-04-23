@@ -5,6 +5,8 @@ var HTMLWebpackPluginConfig = new HtmlWebpackPlugin({
 	inject: 'body'
 });
 
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+
 var ExtractTextPlugin = require('extract-text-webpack-plugin');
 
 module.exports = {
@@ -13,23 +15,23 @@ module.exports = {
 	],
 	output: {
 		filename: "index_bundle.js",
-		path: __dirname + '/dist'
+		// path: __dirname + '/dist'
+		path: __dirname
 	},
 	module: {
-		loaders: [{
+		rules: [{
 				test: /\.js$/,
 				include: __dirname + '/app',
 				loader: "babel-loader"
 			},
-			{ test: /\.json$/, loader: "json-loader" },
-			{ test: /\.css$/, loader: ExtractTextPlugin.extract("css-loader")},
-			{ test: /\.(png|jpg|jpeg|ico)$/, loader: 'url-loader?limit=8192' }
+			{ test: /\.css$/, use: [MiniCssExtractPlugin.loader,"css-loader"]},
+			// { test: /\.(png|jpg|jpeg|ico)$/, use: { loader: 'file-loader', options: "[name][path].[hash].[ext]"}},
 		]
 	},
 
 	plugins: [
 		HTMLWebpackPluginConfig,
-		new ExtractTextPlugin("./style.css", {allChunks: true})],
+		new MiniCssExtractPlugin("./style.css", {allChunks: true})],
 
-	// devtool: '#inline-source-map'
+	devtool: '#inline-source-map'
 };
